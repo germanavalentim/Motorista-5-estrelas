@@ -630,10 +630,31 @@ renderPainel();
 
 </div><!-- /appContent -->
 
+<!-- TELA DE CRIAR SENHA -->
+
+<div id="senhaScreen" style="display:none;position:fixed;inset:0;background:#0a0e1a;z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
+  <div style="font-size:52px;margin-bottom:16px">🔐</div>
+  <div style="font-size:22px;font-weight:800;margin-bottom:6px;font-family:'DM Sans',sans-serif">Criar Senha</div>
+  <div style="color:#6b7280;font-size:13px;margin-bottom:40px;font-family:'DM Sans',sans-serif">Motorista Pro</div>
+  <div style="width:100%;max-width:320px">
+    <div style="margin-bottom:12px">
+      <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">Nova Senha</label>
+      <input id="novaSenha" type="password" placeholder="••••••••" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">Confirmar Senha</label>
+      <input id="confirmarSenha" type="password" placeholder="••••••••" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+    </div>
+    <button onclick="salvarNovaSenha()" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px 40px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;">Salvar Senha</button>
+    <div id="senhaErro" style="color:#ff4d6d;font-size:12px;margin-top:12px;text-align:center;font-family:'DM Sans',sans-serif;min-height:16px"></div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/gotrue-js@0.9.29/dist/gotrue.js"></script>
 
 <script>
 var auth = null;
+var recoveryToken = null;
 
 function initAuth() {
   try {
@@ -642,12 +663,59 @@ function initAuth() {
       audience: '',
       setCookie: true
     });
+
+    // Verifica se tem token de recovery/invite no hash da URL
+    var hash = window.location.hash;
+    if (hash && hash.indexOf('recovery_token=') > -1) {
+      var match = hash.match(/recovery_token=([^&]+)/);
+      if (match) {
+        recoveryToken = match[1];
+        mostrarTelaSenha();
+        return;
+      }
+    }
+    if (hash && hash.indexOf('invite_token=') > -1) {
+      var match2 = hash.match(/invite_token=([^&]+)/);
+      if (match2) {
+        recoveryToken = match2[1];
+        mostrarTelaSenha();
+        return;
+      }
+    }
+    if (hash && hash.indexOf('confirmation_token=') > -1) {
+      var match3 = hash.match(/confirmation_token=([^&]+)/);
+      if (match3) {
+        recoveryToken = match3[1];
+        mostrarTelaSenha();
+        return;
+      }
+    }
+
     var user = auth.currentUser();
     if (user) { showApp(); } else { showLogin(); }
   } catch(e) {
-    // Se não conseguir inicializar (ex: teste local), mostra app direto
     showApp();
   }
+}
+
+function mostrarTelaSenha() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appContent').style.display = 'none';
+  var s = document.getElementById('senhaScreen');
+  s.style.display = 'flex';
+}
+
+function salvarNovaSenha() {
+  var nova = document.getElementById('novaSenha').value;
+  var conf = document.getElementById('confirmarSenha').value;
+  var erro = document.getElementById('senhaErro');
+  if (!nova || nova.length < 6) { erro.textContent = 'Senha precisa ter pelo menos 6 caracteres'; return; }
+  if (nova !== conf) { erro.textContent = 'As senhas não coincidem'; return; }
+  erro.textContent = 'Salvando...';
+  auth.recover(recoveryToken)
+    .then(function(user) { return user.update({password: nova}); })
+    .then(function() { erro.style.color='#00e5a0'; erro.textContent = 'Senha criada! Entrando...'; setTimeout(showApp, 1500); })
+    .catch(function(e) { erro.textContent = 'Erro ao salvar senha. Tente novamente.'; console.log(e); });
 }
 
 function fazerLogin() {
@@ -663,14 +731,15 @@ function fazerLogin() {
 
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('senhaScreen').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
 }
 function showLogin() {
   document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('senhaScreen').style.display = 'none';
   document.getElementById('appContent').style.display = 'none';
 }
 
-// Logout
 var _netlifyLogout = function() {
   if (auth && auth.currentUser()) {
     auth.currentUser().logout().then(function(){ showLogin(); });
