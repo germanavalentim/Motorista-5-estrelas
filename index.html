@@ -87,18 +87,54 @@ canvas{max-width:100%;}
       <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">E-mail</label>
       <input id="loginEmail" type="email" autocomplete="email" placeholder="seu@email.com" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
     </div>
-    <div id="senhaDiv" style="margin-bottom:20px">
+    <div style="margin-bottom:20px">
       <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">Senha</label>
-      <input id="loginSenha" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+      <input id="loginSenha" type="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
     </div>
-    <button id="btnEntrar" onclick="fazerLogin()" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;margin-bottom:12px;">Entrar</button>
-    <button id="btnEsqueci" onclick="mostrarEsqueci()" style="background:transparent;color:#6b7280;border:none;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;padding:8px;">Esqueci minha senha</button>
+    <button id="btnEntrar" onclick="fazerLogin()" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;margin-bottom:8px;">Entrar</button>
     <div id="loginMsg" style="font-size:12px;margin-top:8px;text-align:center;font-family:'DM Sans',sans-serif;min-height:16px;color:#ff4d6d"></div>
   </div>
-  <div style="color:#6b7280;font-size:11px;margin-top:24px;text-align:center;font-family:'DM Sans',sans-serif">Acesso restrito. Solicite um convite ao administrador.</div>
 </div>
 
-<script src="https://unpkg.com/gotrue-js@0.9.29/dist/gotrue.js"></script>
+<!-- TELA ADMIN -->
+
+<div id="adminScreen" style="display:none;position:fixed;inset:0;background:#0a0e1a;z-index:200;overflow-y:auto;">
+  <div style="padding:max(24px,env(safe-area-inset-top)) 16px 100px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div>
+        <div style="font-size:18px;font-weight:800;font-family:'DM Sans',sans-serif">⚙️ Painel Admin</div>
+        <div style="color:#6b7280;font-size:12px;font-family:'DM Sans',sans-serif">Motorista Pro</div>
+      </div>
+      <button onclick="sairAdmin()" style="background:#1f2937;color:#f9fafb;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Sair</button>
+    </div>
+
+```
+<!-- Adicionar usuário -->
+<div style="background:#111827;border:1px solid #1f2937;border-radius:16px;padding:16px;margin-bottom:16px;">
+  <div style="font-weight:700;margin-bottom:14px;font-family:'DM Sans',sans-serif;">➕ Novo Usuário</div>
+  <div style="margin-bottom:10px;">
+    <label style="display:block;color:#6b7280;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'DM Sans',sans-serif;">E-mail</label>
+    <input id="novoEmail" type="email" placeholder="cliente@email.com" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:8px;color:#f9fafb;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+  </div>
+  <div style="margin-bottom:10px;">
+    <label style="display:block;color:#6b7280;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'DM Sans',sans-serif;">Senha</label>
+    <input id="novaSenha" type="text" placeholder="senha123" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:8px;color:#f9fafb;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+  </div>
+  <div style="margin-bottom:14px;">
+    <label style="display:block;color:#6b7280;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:'DM Sans',sans-serif;">Validade (deixe em branco = sem limite)</label>
+    <input id="novaValidade" type="date" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:8px;color:#f9fafb;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+  </div>
+  <button onclick="adicionarUsuario()" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;">Cadastrar</button>
+  <div id="adminMsg" style="font-size:12px;margin-top:8px;text-align:center;font-family:'DM Sans',sans-serif;min-height:16px;"></div>
+</div>
+
+<!-- Lista de usuários -->
+<div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#6b7280;margin-bottom:10px;font-family:'DM Sans',sans-serif;">Usuários Cadastrados</div>
+<div id="adminUserList"></div>
+```
+
+  </div>
+</div>
 
 <!-- APP (oculto até login) -->
 
@@ -633,18 +669,43 @@ renderPainel();
 </div><!-- /appContent -->
 
 <script>
-var auth = new GoTrue({
-  APIUrl: 'https://mellifluous-cupcake-0dd1f3.netlify.app/.netlify/identity',
-  setCookie: true
-});
+// ===== SISTEMA DE AUTH PROPRIO =====
+var ADMIN_EMAIL = 'agenorlimaaa@gmail.com';
+var ADMIN_SENHA = '040608';
+var AUTH_KEY = 'moto_pro_auth';
+var USERS_KEY = 'moto_pro_users';
+
+function getUsuarios() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch(e) { return []; }
+}
+function salvarUsuarios(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+function getSessao() {
+  try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch(e) { return null; }
+}
+function setSessao(email) {
+  localStorage.setItem(AUTH_KEY, JSON.stringify({email:email, ts:Date.now()}));
+}
+function limparSessao() {
+  localStorage.removeItem(AUTH_KEY);
+}
 
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminScreen').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
 }
 function showLogin() {
   document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminScreen').style.display = 'none';
   document.getElementById('appContent').style.display = 'none';
+}
+function showAdmin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminScreen').style.display = 'block';
+  document.getElementById('appContent').style.display = 'none';
+  renderAdminUsers();
 }
 
 function setMsg(txt, cor) {
@@ -654,40 +715,157 @@ function setMsg(txt, cor) {
 }
 
 function fazerLogin() {
-  var email = document.getElementById('loginEmail').value.trim();
+  var email = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
   var senha = document.getElementById('loginSenha').value;
   if (!email || !senha) { setMsg('Preencha e-mail e senha'); return; }
-  setMsg('Entrando...', '#6b7280');
-  document.getElementById('btnEntrar').disabled = true;
-  auth.login(email, senha, true)
-    .then(function() { showApp(); })
-    .catch(function() {
-      setMsg('E-mail ou senha incorretos');
-      document.getElementById('btnEntrar').disabled = false;
-    });
+
+  // Login admin
+  if (email === ADMIN_EMAIL.toLowerCase() && senha === ADMIN_SENHA) {
+    setSessao('__admin__');
+    showAdmin();
+    return;
+  }
+
+  // Login usuário
+  var users = getUsuarios();
+  var user = null;
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].email.toLowerCase() === email && users[i].senha === senha) {
+      user = users[i]; break;
+    }
+  }
+  if (!user) { setMsg('E-mail ou senha incorretos'); return; }
+  if (!user.ativo) { setMsg('Acesso desativado. Fale com o administrador.'); return; }
+  if (user.validade) {
+    var hoje = new Date().toISOString().split('T')[0];
+    if (hoje > user.validade) { setMsg('Acesso expirado. Renove sua assinatura.'); return; }
+  }
+
+  // Troca localStorage para dados do usuário
+  var userKey = 'moto_pro_' + btoa(email).replace(/=/g,'');
+  setSessao(email);
+  // Carrega dados do usuário específico
+  try {
+    var userData = localStorage.getItem(userKey);
+    if (userData) { localStorage.setItem('moto_pro', userData); }
+    else { localStorage.removeItem('moto_pro'); }
+  } catch(e) {}
+  window._userKey = userKey;
+  showApp();
 }
 
-function mostrarEsqueci() {
-  var email = document.getElementById('loginEmail').value.trim();
-  if (!email) { setMsg('Digite seu e-mail primeiro'); return; }
-  setMsg('Enviando...', '#6b7280');
-  auth.requestPasswordRecovery(email)
-    .then(function() { setMsg('E-mail enviado! Verifique sua caixa de entrada.', '#00e5a0'); })
-    .catch(function() { setMsg('Erro ao enviar. Verifique o e-mail digitado.'); });
+// Salva dados do usuário na chave específica ao persistir
+var _origPersist = window.persist;
+function persist() {
+  try { localStorage.setItem('moto_pro', JSON.stringify(S)); } catch(e) {}
+  if (window._userKey) {
+    try { localStorage.setItem(window._userKey, JSON.stringify(S)); } catch(e) {}
+  }
 }
+
+function sairAdmin() { limparSessao(); showLogin(); }
 
 var _netlifyLogout = function() {
-  var u = auth.currentUser();
-  if (u) { u.logout().then(showLogin).catch(showLogin); }
-  else { showLogin(); }
+  if (window._userKey) { try { localStorage.setItem(window._userKey, JSON.stringify(S)); } catch(e) {} }
+  limparSessao();
+  window._userKey = null;
+  showLogin();
 };
 
-// Verifica se já está logado
+// ===== PAINEL ADMIN =====
+function adicionarUsuario() {
+  var email = (document.getElementById('novoEmail').value || '').trim().toLowerCase();
+  var senha = (document.getElementById('novaSenha').value || '').trim();
+  var validade = document.getElementById('novaValidade').value;
+  var msg = document.getElementById('adminMsg');
+  if (!email || !senha) { msg.style.color='#ff4d6d'; msg.textContent='Preencha e-mail e senha'; return; }
+  var users = getUsuarios();
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].email.toLowerCase() === email) { msg.style.color='#ff4d6d'; msg.textContent='E-mail já cadastrado'; return; }
+  }
+  users.push({email:email, senha:senha, validade:validade||'', ativo:true, criado:new Date().toISOString().split('T')[0]});
+  salvarUsuarios(users);
+  document.getElementById('novoEmail').value='';
+  document.getElementById('novaSenha').value='';
+  document.getElementById('novaValidade').value='';
+  msg.style.color='#00e5a0'; msg.textContent='Usuário cadastrado!';
+  setTimeout(function(){ msg.textContent=''; }, 2000);
+  renderAdminUsers();
+}
+
+function toggleUsuario(email) {
+  var users = getUsuarios();
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].email === email) { users[i].ativo = !users[i].ativo; break; }
+  }
+  salvarUsuarios(users); renderAdminUsers();
+}
+
+function renovarUsuario(email) {
+  var meses = prompt('Renovar por quantos meses?', '1');
+  if (!meses) return;
+  var users = getUsuarios();
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].email === email) {
+      var base = users[i].validade && users[i].validade > new Date().toISOString().split('T')[0] ? new Date(users[i].validade) : new Date();
+      base.setMonth(base.getMonth() + parseInt(meses));
+      users[i].validade = base.toISOString().split('T')[0];
+      users[i].ativo = true;
+      break;
+    }
+  }
+  salvarUsuarios(users); renderAdminUsers();
+}
+
+function removerUsuario(email) {
+  if (!confirm('Remover ' + email + '?')) return;
+  var users = getUsuarios().filter(function(u){ return u.email !== email; });
+  salvarUsuarios(users); renderAdminUsers();
+}
+
+function renderAdminUsers() {
+  var users = getUsuarios();
+  var el = document.getElementById('adminUserList');
+  if (!users.length) { el.innerHTML='<div style="color:#6b7280;text-align:center;font-size:13px;padding:20px;font-family:\'DM Sans\',sans-serif;">Nenhum usuário cadastrado</div>'; return; }
+  var hoje = new Date().toISOString().split('T')[0];
+  var h = '';
+  users.forEach(function(u) {
+    var expirado = u.validade && hoje > u.validade;
+    var status = !u.ativo ? '🔴 Desativado' : expirado ? '🟡 Expirado' : '🟢 Ativo';
+    var cor = !u.ativo ? '#ff4d6d' : expirado ? '#fbbf24' : '#00e5a0';
+    h += '<div style="background:#111827;border:1px solid #1f2937;border-radius:14px;padding:14px;margin-bottom:10px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'
+      + '<div><div style="font-weight:700;font-size:13px;font-family:\'DM Sans\',sans-serif;word-break:break-all;">'+u.email+'</div>'
+      + '<div style="font-size:11px;color:'+cor+';margin-top:2px;font-family:\'DM Sans\',sans-serif;">'+status+'</div>'
+      + (u.validade?'<div style="font-size:11px;color:#6b7280;font-family:\'DM Sans\',sans-serif;">Validade: '+u.validade+'</div>':'<div style="font-size:11px;color:#6b7280;font-family:\'DM Sans\',sans-serif;">Sem validade</div>')
+      + '</div></div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+      + '<button onclick="toggleUsuario(\''+u.email+'\')" style="flex:1;background:'+(u.ativo?'rgba(255,77,109,0.15)':'rgba(0,229,160,0.15)')+';color:'+(u.ativo?'#ff4d6d':'#00e5a0')+';border:1px solid '+(u.ativo?'rgba(255,77,109,0.3)':'rgba(0,229,160,0.3)')+';border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;">'+(u.ativo?'Desativar':'Ativar')+'</button>'
+      + '<button onclick="renovarUsuario(\''+u.email+'\')" style="flex:1;background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;">Renovar</button>'
+      + '<button onclick="removerUsuario(\''+u.email+'\')" style="background:rgba(107,114,128,0.15);color:#6b7280;border:1px solid rgba(107,114,128,0.3);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;">Remover</button>'
+      + '</div></div>';
+  });
+  el.innerHTML = h;
+}
+
+// Verifica sessão ao carregar
 (function() {
-  try {
-    var u = auth.currentUser();
-    if (u) { showApp(); } else { showLogin(); }
-  } catch(e) { showLogin(); }
+  var sessao = getSessao();
+  if (!sessao) { showLogin(); return; }
+  if (sessao.email === '__admin__') { showAdmin(); return; }
+  // Revalida usuário
+  var users = getUsuarios();
+  var hoje = new Date().toISOString().split('T')[0];
+  var ok = false;
+  for (var i = 0; i < users.length; i++) {
+    var u = users[i];
+    if (u.email.toLowerCase() === sessao.email.toLowerCase() && u.ativo && (!u.validade || hoje <= u.validade)) {
+      ok = true;
+      window._userKey = 'moto_pro_' + btoa(sessao.email).replace(/=/g,'');
+      break;
+    }
+  }
+  if (ok) { showApp(); } else { limparSessao(); showLogin(); }
 })();
 </script>
 
