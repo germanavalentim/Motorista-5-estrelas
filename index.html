@@ -79,14 +79,23 @@ canvas{max-width:100%;}
 
 <!-- TELA DE LOGIN -->
 
-<div id="loginScreen" style="display:none;position:fixed;inset:0;background:#0a0e1a;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
+<div id="loginScreen" style="display:flex;position:fixed;inset:0;background:#0a0e1a;z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
   <div style="font-size:52px;margin-bottom:16px">🚗</div>
   <div style="font-size:22px;font-weight:800;margin-bottom:6px;font-family:'DM Sans',sans-serif">Motorista Pro</div>
   <div style="color:#6b7280;font-size:13px;margin-bottom:40px;font-family:'DM Sans',sans-serif">Controle Financeiro</div>
-  <button id="btnLogin" onclick="netlifyIdentity.open('login')" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px 40px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:320px;">
-    Entrar
-  </button>
-  <div id="loginMsg" style="color:#6b7280;font-size:12px;margin-top:20px;text-align:center;font-family:'DM Sans',sans-serif">Acesso restrito. Solicite um convite ao administrador.</div>
+  <div id="loginForm" style="width:100%;max-width:320px">
+    <div style="margin-bottom:12px">
+      <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">E-mail</label>
+      <input id="loginEmail" type="email" inputmode="email" placeholder="seu@email.com" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">Senha</label>
+      <input id="loginPassword" type="password" placeholder="••••••••" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+    </div>
+    <button onclick="fazerLogin()" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px 40px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;">Entrar</button>
+    <div id="loginErro" style="color:#ff4d6d;font-size:12px;margin-top:12px;text-align:center;font-family:'DM Sans',sans-serif;min-height:16px"></div>
+  </div>
+  <div style="color:#6b7280;font-size:12px;margin-top:20px;text-align:center;font-family:'DM Sans',sans-serif">Acesso restrito. Solicite um convite ao administrador.</div>
 </div>
 
 <!-- APP (oculto até login) -->
@@ -621,8 +630,37 @@ renderPainel();
 
 </div><!-- /appContent -->
 
+<script src="https://unpkg.com/gotrue-js@0.9.29/dist/gotrue.js"></script>
+
 <script>
-// ===== NETLIFY IDENTITY AUTH =====
+var auth = null;
+
+function initAuth() {
+  try {
+    auth = new GoTrue({
+      APIUrl: 'https://mellifluous-cupcake-0dd1f3.netlify.app/.netlify/identity',
+      audience: '',
+      setCookie: true
+    });
+    var user = auth.currentUser();
+    if (user) { showApp(); } else { showLogin(); }
+  } catch(e) {
+    // Se não conseguir inicializar (ex: teste local), mostra app direto
+    showApp();
+  }
+}
+
+function fazerLogin() {
+  var email = document.getElementById('loginEmail').value;
+  var senha = document.getElementById('loginPassword').value;
+  var erro = document.getElementById('loginErro');
+  if (!email || !senha) { erro.textContent = 'Preencha e-mail e senha'; return; }
+  erro.textContent = 'Entrando...';
+  auth.login(email, senha, true)
+    .then(function() { showApp(); })
+    .catch(function(e) { erro.textContent = 'E-mail ou senha incorretos'; });
+}
+
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
@@ -632,22 +670,14 @@ function showLogin() {
   document.getElementById('appContent').style.display = 'none';
 }
 
-if (typeof netlifyIdentity !== 'undefined') {
-  netlifyIdentity.on('init', function(user) {
-    if (user) { showApp(); } else { showLogin(); }
-  });
-  netlifyIdentity.on('login', function() {
-    netlifyIdentity.close();
-    showApp();
-  });
-  netlifyIdentity.on('logout', function() {
-    showLogin();
-  });
-  netlifyIdentity.init();
-} else {
-  // Se não estiver no Netlify (ex: teste local), mostra o app direto
-  showApp();
-}
+// Logout
+var _netlifyLogout = function() {
+  if (auth && auth.currentUser()) {
+    auth.currentUser().logout().then(function(){ showLogin(); });
+  } else { showLogin(); }
+};
+
+window.addEventListener('load', initAuth);
 </script>
 
 </body>
