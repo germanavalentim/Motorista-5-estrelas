@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -9,6 +10,7 @@
 <title>Motorista Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <style>
 :root {
   --bg:#0a0e1a; --card:#111827; --border:#1f2937;
@@ -75,6 +77,22 @@ canvas{max-width:100%;}
 </head>
 <body>
 
+<!-- TELA DE LOGIN -->
+
+<div id="loginScreen" style="display:none;position:fixed;inset:0;background:#0a0e1a;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
+  <div style="font-size:52px;margin-bottom:16px">🚗</div>
+  <div style="font-size:22px;font-weight:800;margin-bottom:6px;font-family:'DM Sans',sans-serif">Motorista Pro</div>
+  <div style="color:#6b7280;font-size:13px;margin-bottom:40px;font-family:'DM Sans',sans-serif">Controle Financeiro</div>
+  <button id="btnLogin" onclick="netlifyIdentity.open('login')" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px 40px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:320px;">
+    Entrar
+  </button>
+  <div id="loginMsg" style="color:#6b7280;font-size:12px;margin-top:20px;text-align:center;font-family:'DM Sans',sans-serif">Acesso restrito. Solicite um convite ao administrador.</div>
+</div>
+
+<!-- APP (oculto até login) -->
+
+<div id="appContent" style="display:none">
+
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:10px">
     <span style="font-size:26px">&#128663;</span>
@@ -89,6 +107,7 @@ canvas{max-width:100%;}
 <div class="content">
 
   <!-- PAINEL -->
+
   <div class="page active" id="page-painel">
     <div style="padding:20px 0 14px">
       <div style="color:var(--muted);font-size:12px;margin-bottom:4px" id="pGreeting">Ola &#128075;</div>
@@ -121,6 +140,7 @@ canvas{max-width:100%;}
   </div>
 
   <!-- REGISTRAR -->
+
   <div class="page" id="page-registrar">
     <div style="padding-top:20px">
       <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">Registrar</h2>
@@ -153,6 +173,7 @@ canvas{max-width:100%;}
   </div>
 
   <!-- DIA -->
+
   <div class="page" id="page-dia">
     <div style="padding-top:20px">
       <h2 style="font-size:18px;font-weight:800;margin-bottom:14px">Resultado do Dia</h2>
@@ -167,6 +188,7 @@ canvas{max-width:100%;}
   </div>
 
   <!-- RESUMO -->
+
   <div class="page" id="page-resumo">
     <div style="padding-top:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -196,6 +218,7 @@ canvas{max-width:100%;}
   </div>
 
   <!-- CONFIG -->
+
   <div class="page" id="page-config">
     <div style="padding-top:20px">
       <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">Configuracoes</h2>
@@ -224,12 +247,14 @@ canvas{max-width:100%;}
         </div>
       </div>
       <button class="btn btn-d btn-fw" onclick="limparDados()">Limpar Todos os Dados</button>
+      <button class="btn btn-fw" style="margin-top:10px;background:#1f2937;color:var(--muted)" onclick="netlifyIdentity.logout()">Sair da conta</button>
     </div>
   </div>
 
 </div>
 
 <!-- BOTTOM NAV -->
+
 <nav class="bottomnav">
   <button class="nav-btn active" onclick="setTab('painel',this)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 3h2m4 0h-4m2-2v4"/></svg>
@@ -254,6 +279,7 @@ canvas{max-width:100%;}
 </nav>
 
 <!-- MODAL TURNO -->
+
 <div class="overlay" id="modal-turno" onclick="closeModal('turno')">
   <div class="mbox" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mtitle">Registrar Turno</span><button class="mclose" onclick="closeModal('turno')">x</button></div>
@@ -276,6 +302,7 @@ canvas{max-width:100%;}
 </div>
 
 <!-- MODAL EDITAR TURNO -->
+
 <div class="overlay" id="modal-editar" onclick="closeModal('editar')">
   <div class="mbox" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mtitle">Editar Turno</span><button class="mclose" onclick="closeModal('editar')">x</button></div>
@@ -301,6 +328,7 @@ canvas{max-width:100%;}
 </div>
 
 <!-- MODAL DESPESA -->
+
 <div class="overlay" id="modal-despesa" onclick="closeModal('despesa')">
   <div class="mbox" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mtitle">Registrar Despesa</span><button class="mclose" onclick="closeModal('despesa')">x</button></div>
@@ -314,6 +342,7 @@ canvas{max-width:100%;}
 </div>
 
 <!-- MODAL ABASTECIMENTO -->
+
 <div class="overlay" id="modal-abastecimento" onclick="closeModal('abastecimento')">
   <div class="mbox" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mtitle">Abastecimento</span><button class="mclose" onclick="closeModal('abastecimento')">x</button></div>
@@ -589,5 +618,37 @@ function exportCSV(){
 
 renderPainel();
 </script>
+
+</div><!-- /appContent -->
+
+<script>
+// ===== NETLIFY IDENTITY AUTH =====
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appContent').style.display = 'block';
+}
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appContent').style.display = 'none';
+}
+
+if (typeof netlifyIdentity !== 'undefined') {
+  netlifyIdentity.on('init', function(user) {
+    if (user) { showApp(); } else { showLogin(); }
+  });
+  netlifyIdentity.on('login', function() {
+    netlifyIdentity.close();
+    showApp();
+  });
+  netlifyIdentity.on('logout', function() {
+    showLogin();
+  });
+  netlifyIdentity.init();
+} else {
+  // Se não estiver no Netlify (ex: teste local), mostra o app direto
+  showApp();
+}
+</script>
+
 </body>
 </html>
