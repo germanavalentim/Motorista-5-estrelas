@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Motorista Pro">
+<title>Motorista Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#0a0e1a; --card:#111827; --border:#1f2937;
+  --accent:#00e5a0; --red:#ff4d6d; --yellow:#fbbf24;
+  --blue:#3b82f6; --purple:#a855f7;
+  --text:#f9fafb; --muted:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;max-width:480px;margin:0 auto;min-height:100vh;overflow-x:hidden;}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,14,26,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;justify-content:space-between;align-items:center;}
+.topbar-badge{background:rgba(0,229,160,0.12);border-radius:20px;padding:6px 14px;color:var(--accent);font-weight:800;font-family:'DM Mono',monospace;font-size:13px;}
+.bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(17,24,39,0.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding:8px 0 max(12px,env(safe-area-inset-bottom));z-index:50;}
+.nav-btn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;}
+.nav-btn span{font-size:10px;font-weight:600;color:var(--muted);font-family:'DM Sans',sans-serif;}
+.nav-btn.active span{color:var(--accent);}
+.nav-btn.active svg{stroke:var(--accent) !important;}
+.content{padding:0 16px 100px;}
+.page{display:none;}.page.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+.card-tap{cursor:pointer;transition:border-color 0.15s;}.card-tap:active{border-color:var(--accent);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;}
+.slbl{color:var(--muted);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.sval{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;}
+.meta-card{border-radius:16px;padding:16px;margin-bottom:14px;border:1px solid;}
+.meta-ok{background:#002d1e;border-color:var(--accent);}
+.meta-off{background:#2d0a14;border-color:var(--red);}
+.pbar{background:#1a2233;border-radius:8px;height:8px;overflow:hidden;margin-top:8px;}
+.pbar-fill{height:100%;border-radius:8px;transition:width 0.5s;}
+.seclbl{color:var(--muted);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.btn{border:none;border-radius:12px;cursor:pointer;font-weight:700;font-family:'DM Sans',sans-serif;padding:12px 20px;font-size:14px;transition:opacity 0.15s;}
+.btn:active{opacity:0.8;}
+.btn-p{background:var(--accent);color:#0a0e1a;}
+.btn-d{background:rgba(255,77,109,0.15);color:var(--red);border:1px solid rgba(255,77,109,0.3);}
+.btn-o{background:transparent;border:1px solid var(--accent);color:var(--accent);}
+.btn-sm{padding:8px 14px;font-size:13px;}
+.btn-fw{width:100%;}
+.ig{margin-bottom:12px;}
+.il{display:block;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.ifield{width:100%;background:#1a2233;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;appearance:none;}
+.ifield:focus{border-color:var(--accent);}
+select.ifield{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+.irow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.hint{color:var(--accent);font-size:12px;margin:-4px 0 10px;min-height:16px;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.mbox{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px max(32px,env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;border:1px solid var(--border);animation:slideUp 0.22s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.mtitle{font-size:18px;font-weight:800;}
+.mclose{background:none;border:none;color:var(--muted);cursor:pointer;font-size:26px;line-height:1;padding:0;}
+.period-sel{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;margin-bottom:14px;}
+.period-btn{flex:1;padding:8px 0;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;background:transparent;color:var(--muted);transition:all 0.15s;}
+.period-btn.active{background:var(--accent);color:#0a0e1a;}
+.nav-row{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px;}
+.nav-arr{background:none;border:none;color:var(--accent);font-size:24px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;}
+.nav-lbl{color:var(--text);font-size:13px;font-weight:700;text-align:center;flex:1;}
+.badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,229,160,0.12);color:var(--accent);}
+.empty{color:var(--muted);text-align:center;margin-top:50px;font-size:14px;}
+.reg-row{display:flex;align-items:center;gap:14px;}
+.reg-ico{border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+canvas{max-width:100%;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:26px">&#128663;</span>
+    <div>
+      <div style="font-weight:800;font-size:15px">Motorista Pro</div>
+      <div style="color:var(--muted);font-size:10px">Controle Financeiro</div>
+    </div>
+  </div>
+  <div class="topbar-badge" id="topBadge">R$ 0,00</div>
+</div>
+
+<div class="content">
+
+  <!-- PAINEL -->
+  <div class="page active" id="page-painel">
+    <div style="padding:20px 0 14px">
+      <div style="color:var(--muted);font-size:12px;margin-bottom:4px" id="pGreeting">Ola &#128075;</div>
+      <div style="font-size:26px;font-weight:800;font-family:'DM Mono',monospace" id="pFat">R$ 0,00</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:2px" id="pSub">Faturamento este mes</div>
+    </div>
+    <div class="meta-card meta-ok" id="pMetaCard">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="color:var(--muted);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">&#127919; Meta Mensal</div>
+          <div style="font-size:13px" id="pMetaInfo">-</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace" id="pMetaPct">0%</div>
+          <div style="color:var(--muted);font-size:10px;margin-top:2px" id="pMetaStatus">Foque na meta!</div>
+        </div>
+      </div>
+      <div class="pbar"><div class="pbar-fill" id="pMetaBar" style="width:0%;background:var(--accent)"></div></div>
+      <div style="color:var(--muted);font-size:11px;margin-top:8px" id="pMetaFalta">-</div>
+    </div>
+    <div class="grid2" id="pStats"></div>
+    <div class="card" id="pPlatCard" style="display:none;margin-bottom:12px">
+      <div class="seclbl">&#127942; Por Plataforma</div>
+      <div style="position:relative;height:180px"><canvas id="pPlatChart"></canvas></div>
+    </div>
+    <div class="card" id="pMonthCard" style="display:none">
+      <div class="seclbl">&#128200; Historico Mensal</div>
+      <div style="position:relative;height:150px"><canvas id="pMonthChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- REGISTRAR -->
+  <div class="page" id="page-registrar">
+    <div style="padding-top:20px">
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">Registrar</h2>
+      <div class="card card-tap" onclick="openModal('turno')">
+        <div class="reg-row">
+          <div class="reg-ico" style="background:rgba(0,229,160,0.12)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v9a2 2 0 01-2 2h-3M16 17a2 2 0 11-4 0 2 2 0 014 0M7 17a2 2 0 11-4 0 2 2 0 014 0"/></svg>
+          </div>
+          <div><div style="font-weight:700;margin-bottom:2px">Turno de Trabalho</div><div style="color:var(--muted);font-size:12px">Registrar corridas e horas</div></div>
+        </div>
+      </div>
+      <div class="card card-tap" onclick="openModal('despesa')">
+        <div class="reg-row">
+          <div class="reg-ico" style="background:rgba(255,77,109,0.12)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff4d6d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div><div style="font-weight:700;margin-bottom:2px">Despesa</div><div style="color:var(--muted);font-size:12px">Manutencao, alimentacao...</div></div>
+        </div>
+      </div>
+      <div class="card card-tap" onclick="openModal('abastecimento')">
+        <div class="reg-row">
+          <div class="reg-ico" style="background:rgba(251,191,36,0.12)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V8l9-5 9 5v14H3zM9 22V12h6v10"/></svg>
+          </div>
+          <div><div style="font-weight:700;margin-bottom:2px">Abastecimento</div><div style="color:var(--muted);font-size:12px">Historico de combustivel</div></div>
+        </div>
+      </div>
+      <div id="rAbastList"></div>
+    </div>
+  </div>
+
+  <!-- DIA -->
+  <div class="page" id="page-dia">
+    <div style="padding-top:20px">
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:14px">Resultado do Dia</h2>
+      <div class="nav-row">
+        <button class="nav-arr" onclick="navDia(-1)">&#8249;</button>
+        <input type="date" id="diaDatePicker" onchange="diaFromPicker(this.value)" style="background:none;border:none;color:var(--text);font-size:13px;font-weight:700;text-align:center;flex:1;outline:none;font-family:'DM Sans',sans-serif;-webkit-appearance:none;cursor:pointer;">
+        <button class="nav-arr" onclick="navDia(1)">&#8250;</button>
+      </div>
+      <div class="grid2" id="diaStats"></div>
+      <div id="diaTurnos"></div>
+    </div>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="page" id="page-resumo">
+    <div style="padding-top:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="font-size:18px;font-weight:800">Resumo</h2>
+        <button class="btn btn-o btn-sm" onclick="exportCSV()">&#8595; CSV</button>
+      </div>
+      <div class="period-sel">
+        <button class="period-btn active" onclick="setPeriodo('semana',this)">Semana</button>
+        <button class="period-btn" onclick="setPeriodo('mes',this)">Mes</button>
+        <button class="period-btn" onclick="setPeriodo('ano',this)">Ano</button>
+      </div>
+      <div class="nav-row">
+        <button class="nav-arr" onclick="navPeriodo(-1)">&#8249;</button>
+        <span class="nav-lbl" id="rPeriodoLbl">-</span>
+        <button class="nav-arr" onclick="navPeriodo(1)">&#8250;</button>
+      </div>
+      <div class="grid2" id="rStats"></div>
+      <div class="card" id="rDayCard" style="display:none;margin-bottom:12px">
+        <div class="seclbl">&#128202; Faturamento Diario</div>
+        <div style="position:relative;height:140px"><canvas id="rDayChart"></canvas></div>
+      </div>
+      <div class="card" id="rCatCard" style="display:none">
+        <div class="seclbl">&#128176; Despesas por Categoria</div>
+        <div id="rCatList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="page" id="page-config">
+    <div style="padding-top:20px">
+      <h2 style="font-size:18px;font-weight:800;margin-bottom:18px">Configuracoes</h2>
+      <div class="card" style="margin-bottom:12px">
+        <div class="seclbl">Perfil</div>
+        <div class="ig"><label class="il">Seu Nome</label><input class="ifield" id="cfgNome" placeholder="Nome"></div>
+        <div class="ig"><label class="il">Veiculo</label><input class="ifield" id="cfgVeiculo" placeholder="Modelo"></div>
+        <div class="ig"><label class="il">Placa</label><input class="ifield" id="cfgPlaca" placeholder="AAA-0000"></div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="seclbl">&#9981; Preco do Combustivel</div>
+        <div class="ig"><label class="il">Preco por litro (R$)</label><input class="ifield" id="cfgPreco" type="number" inputmode="decimal" step="0.01" placeholder="ex: 6,49"></div>
+        <div style="color:var(--muted);font-size:11px;margin-top:-6px;line-height:1.5">Usado para calcular % combustivel no painel. Altere quando o preco mudar.</div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="seclbl">&#127919; Meta Mensal</div>
+        <div class="ig"><label class="il">Valor (R$)</label><input class="ifield" id="cfgMeta" type="number" inputmode="numeric" placeholder="5000"></div>
+      </div>
+      <button class="btn btn-p btn-fw" style="margin-bottom:16px" onclick="salvarConfig()">Salvar Configuracoes</button>
+      <div class="card" style="margin-bottom:12px">
+        <div class="seclbl">Dados Salvos</div>
+        <div style="display:flex;gap:28px">
+          <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent)" id="cfgCntT">0</div><div style="color:var(--muted);font-size:11px">Turnos</div></div>
+          <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--red)" id="cfgCntD">0</div><div style="color:var(--muted);font-size:11px">Despesas</div></div>
+          <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--yellow)" id="cfgCntA">0</div><div style="color:var(--muted);font-size:11px">Abastec.</div></div>
+        </div>
+      </div>
+      <button class="btn btn-d btn-fw" onclick="limparDados()">Limpar Todos os Dados</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottomnav">
+  <button class="nav-btn active" onclick="setTab('painel',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 3h2m4 0h-4m2-2v4"/></svg>
+    <span>Painel</span>
+  </button>
+  <button class="nav-btn" onclick="setTab('registrar',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Registrar</span>
+  </button>
+  <button class="nav-btn" onclick="setTab('dia',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    <span>Dia</span>
+  </button>
+  <button class="nav-btn" onclick="setTab('resumo',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    <span>Resumo</span>
+  </button>
+  <button class="nav-btn" onclick="setTab('config',this)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span>Config</span>
+  </button>
+</nav>
+
+<!-- MODAL TURNO -->
+<div class="overlay" id="modal-turno" onclick="closeModal('turno')">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mtitle">Registrar Turno</span><button class="mclose" onclick="closeModal('turno')">x</button></div>
+    <div class="ig"><label class="il">Data</label><input class="ifield" type="date" id="tData"></div>
+    <div class="ig"><label class="il">Plataforma</label>
+      <select class="ifield" id="tPlat"><option>Uber</option><option>99</option><option>iFood</option><option>InDriver</option><option>Particular</option><option>Outro</option></select></div>
+    <div class="irow">
+      <div class="ig"><label class="il">Inicio</label><input class="ifield" type="time" id="tIni" oninput="calcMinT()"></div>
+      <div class="ig"><label class="il">Fim</label><input class="ifield" type="time" id="tFim" oninput="calcMinT()"></div>
+    </div>
+    <div class="hint" id="tMinHint"></div>
+    <div class="ig"><label class="il">Faturamento (R$)</label><input class="ifield" type="number" inputmode="decimal" id="tFat" placeholder="0,00"></div>
+    <div class="irow">
+      <div class="ig"><label class="il">KM Rodados</label><input class="ifield" type="number" inputmode="decimal" step="0.1" id="tKm" placeholder="0,0"></div>
+      <div class="ig"><label class="il">Nr Corridas</label><input class="ifield" type="number" inputmode="numeric" id="tCor" placeholder="0"></div>
+    </div>
+    <div class="ig"><label class="il">Consumo (km/L)</label><input class="ifield" type="number" inputmode="decimal" step="0.1" id="tKmL" placeholder="ex: 10,5"></div>
+    <button class="btn btn-p btn-fw" onclick="salvarTurno()">Salvar Turno</button>
+  </div>
+</div>
+
+<!-- MODAL EDITAR TURNO -->
+<div class="overlay" id="modal-editar" onclick="closeModal('editar')">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mtitle">Editar Turno</span><button class="mclose" onclick="closeModal('editar')">x</button></div>
+    <div class="ig"><label class="il">Data</label><input class="ifield" type="date" id="etData"></div>
+    <div class="ig"><label class="il">Plataforma</label>
+      <select class="ifield" id="etPlat"><option>Uber</option><option>99</option><option>iFood</option><option>InDriver</option><option>Particular</option><option>Outro</option></select></div>
+    <div class="irow">
+      <div class="ig"><label class="il">Inicio</label><input class="ifield" type="time" id="etIni" oninput="calcMinE()"></div>
+      <div class="ig"><label class="il">Fim</label><input class="ifield" type="time" id="etFim" oninput="calcMinE()"></div>
+    </div>
+    <div class="hint" id="etMinHint"></div>
+    <div class="ig"><label class="il">Faturamento (R$)</label><input class="ifield" type="number" inputmode="decimal" id="etFat" placeholder="0,00"></div>
+    <div class="irow">
+      <div class="ig"><label class="il">KM Rodados</label><input class="ifield" type="number" inputmode="decimal" step="0.1" id="etKm" placeholder="0,0"></div>
+      <div class="ig"><label class="il">Nr Corridas</label><input class="ifield" type="number" inputmode="numeric" id="etCor" placeholder="0"></div>
+    </div>
+    <div class="ig"><label class="il">Consumo (km/L)</label><input class="ifield" type="number" inputmode="decimal" step="0.1" id="etKmL" placeholder="ex: 10,5"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-d" style="flex:1" onclick="deletarTurno()">Apagar</button>
+      <button class="btn btn-p" style="flex:2" onclick="salvarEdicao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DESPESA -->
+<div class="overlay" id="modal-despesa" onclick="closeModal('despesa')">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mtitle">Registrar Despesa</span><button class="mclose" onclick="closeModal('despesa')">x</button></div>
+    <div class="ig"><label class="il">Data</label><input class="ifield" type="date" id="dData"></div>
+    <div class="ig"><label class="il">Categoria</label>
+      <select class="ifield" id="dCat"><option>Manutencao</option><option>Lavagem</option><option>Alimentacao</option><option>Multa</option><option>Seguro</option><option>Outro</option></select></div>
+    <div class="ig"><label class="il">Valor (R$)</label><input class="ifield" type="number" inputmode="decimal" id="dVal" placeholder="0,00"></div>
+    <div class="ig"><label class="il">Descricao</label><input class="ifield" id="dDesc" placeholder="Opcional"></div>
+    <button class="btn btn-p btn-fw" onclick="salvarDespesa()">Salvar Despesa</button>
+  </div>
+</div>
+
+<!-- MODAL ABASTECIMENTO -->
+<div class="overlay" id="modal-abastecimento" onclick="closeModal('abastecimento')">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mtitle">Abastecimento</span><button class="mclose" onclick="closeModal('abastecimento')">x</button></div>
+    <div class="ig"><label class="il">Data</label><input class="ifield" type="date" id="aData"></div>
+    <div class="ig"><label class="il">Combustivel</label>
+      <select class="ifield" id="aTipo"><option>Gasolina</option><option>Etanol</option><option>GNV</option><option>Diesel</option></select></div>
+    <div class="irow">
+      <div class="ig"><label class="il">Preco/Litro (R$)</label><input class="ifield" type="number" inputmode="decimal" step="0.01" id="aPreco" placeholder="ex: 6,49" oninput="calcAbast()"></div>
+      <div class="ig"><label class="il">Valor Pago (R$)</label><input class="ifield" type="number" inputmode="decimal" id="aVal" placeholder="ex: 50,00" oninput="calcAbast()"></div>
+    </div>
+    <div class="hint" id="aHint"></div>
+    <div class="ig"><label class="il">Litros (calculado)</label><input class="ifield" id="aLitros" readonly placeholder="-" style="opacity:0.6"></div>
+    <div class="ig"><label class="il">Posto</label><input class="ifield" id="aPosto" placeholder="Nome (opcional)"></div>
+    <button class="btn btn-p btn-fw" onclick="salvarAbast()">Salvar Abastecimento</button>
+  </div>
+</div>
+
+<script>
+var DFLT = {meta:5000,precoComb:0,turnos:[],despesas:[],abastecimentos:[],config:{nome:'Motorista',veiculo:'',placa:''}};
+var S = (function(){ try { var d=JSON.parse(localStorage.getItem('moto_pro')); return d||JSON.parse(JSON.stringify(DFLT)); } catch(e){ return JSON.parse(JSON.stringify(DFLT)); } })();
+function persist(){ try{ localStorage.setItem('moto_pro',JSON.stringify(S)); }catch(e){} }
+
+function brl(v){ return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fkm(v){ return Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:1})+' km'; }
+function fh(m){ var h=Math.floor(m/60),mn=Math.round(m%60); return h+'h '+(mn<10?'0':'')+mn+'min'; }
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function mins(ini,fim){ if(!ini||!fim) return 0; var a=ini.split(':'),b=fim.split(':'); return (parseInt(b[0])*60+parseInt(b[1]))-(parseInt(a[0])*60+parseInt(a[1])); }
+
+function setTab(id,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='painel') renderPainel();
+  else if(id==='registrar') renderRegistrar();
+  else if(id==='dia') renderDia();
+  else if(id==='resumo') renderResumo();
+  else if(id==='config') renderConfig();
+}
+
+function openModal(id){
+  var t=todayStr();
+  if(id==='turno'){
+    document.getElementById('tData').value=t;
+    document.getElementById('tPlat').selectedIndex=0;
+    document.getElementById('tIni').value='';
+    document.getElementById('tFim').value='';
+    document.getElementById('tMinHint').textContent='';
+    document.getElementById('tFat').value='';
+    document.getElementById('tKm').value='';
+    document.getElementById('tCor').value='';
+    document.getElementById('tKmL').value='';
+  } else if(id==='despesa'){
+    document.getElementById('dData').value=t;
+    document.getElementById('dCat').selectedIndex=0;
+    document.getElementById('dVal').value='';
+    document.getElementById('dDesc').value='';
+  } else if(id==='abastecimento'){
+    document.getElementById('aData').value=t;
+    document.getElementById('aTipo').selectedIndex=0;
+    document.getElementById('aPreco').value='';
+    document.getElementById('aVal').value='';
+    document.getElementById('aHint').textContent='';
+    document.getElementById('aLitros').value='';
+    document.getElementById('aPosto').value='';
+  }
+  document.getElementById('modal-'+id).classList.add('open');
+}
+function closeModal(id){ document.getElementById('modal-'+id).classList.remove('open'); }
+
+function calcMinT(){ var m=mins(document.getElementById('tIni').value,document.getElementById('tFim').value); document.getElementById('tMinHint').textContent=m>0?'⏱ '+fh(m):''; }
+function calcMinE(){ var m=mins(document.getElementById('etIni').value,document.getElementById('etFim').value); document.getElementById('etMinHint').textContent=m>0?'⏱ '+fh(m):''; }
+function calcAbast(){
+  var p=parseFloat(document.getElementById('aPreco').value)||0;
+  var v=parseFloat(document.getElementById('aVal').value)||0;
+  if(p>0&&v>0){ var l=v/p; document.getElementById('aLitros').value=l.toFixed(2)+' L'; document.getElementById('aHint').textContent='⛽ '+l.toFixed(2)+' litros · R$ '+p.toFixed(3)+'/L'; }
+  else{ document.getElementById('aLitros').value=''; document.getElementById('aHint').textContent=''; }
+}
+
+function salvarTurno(){
+  var fat=parseFloat(document.getElementById('tFat').value)||0;
+  if(fat<=0){alert('Informe o faturamento');return;}
+  var ini=document.getElementById('tIni').value, fim=document.getElementById('tFim').value;
+  S.turnos.unshift({id:Date.now(),data:document.getElementById('tData').value,plataforma:document.getElementById('tPlat').value,faturamento:fat,km:parseFloat(document.getElementById('tKm').value)||0,corridas:parseInt(document.getElementById('tCor').value)||0,kmL:parseFloat(document.getElementById('tKmL').value)||0,minutos:mins(ini,fim),inicio:ini,fim:fim});
+  persist(); closeModal('turno'); renderPainel();
+}
+
+function salvarDespesa(){
+  var val=parseFloat(document.getElementById('dVal').value)||0;
+  if(val<=0){alert('Informe o valor');return;}
+  S.despesas.unshift({id:Date.now(),data:document.getElementById('dData').value,categoria:document.getElementById('dCat').value,valor:val,descricao:document.getElementById('dDesc').value});
+  persist(); closeModal('despesa'); renderPainel();
+}
+
+function salvarAbast(){
+  var p=parseFloat(document.getElementById('aPreco').value)||0;
+  var v=parseFloat(document.getElementById('aVal').value)||0;
+  if(p<=0||v<=0){alert('Informe o preco por litro e o valor pago');return;}
+  S.abastecimentos.unshift({id:Date.now(),data:document.getElementById('aData').value,tipo:document.getElementById('aTipo').value,litros:v/p,precoPorLitro:p,valorTotal:v,posto:document.getElementById('aPosto').value});
+  persist(); closeModal('abastecimento'); renderRegistrar();
+}
+
+var editId=null;
+function abrirEdicao(id){
+  var t=null; for(var i=0;i<S.turnos.length;i++){if(S.turnos[i].id===id){t=S.turnos[i];break;}} if(!t) return;
+  editId=id;
+  document.getElementById('etData').value=t.data||'';
+  document.getElementById('etPlat').value=t.plataforma||'Uber';
+  document.getElementById('etIni').value=t.inicio||'';
+  document.getElementById('etFim').value=t.fim||'';
+  document.getElementById('etMinHint').textContent=t.minutos>0?'⏱ '+fh(t.minutos):'';
+  document.getElementById('etFat').value=t.faturamento||'';
+  document.getElementById('etKm').value=t.km||'';
+  document.getElementById('etCor').value=t.corridas||'';
+  document.getElementById('etKmL').value=t.kmL||'';
+  document.getElementById('modal-editar').classList.add('open');
+}
+function salvarEdicao(){
+  var fat=parseFloat(document.getElementById('etFat').value)||0;
+  if(fat<=0){alert('Informe o faturamento');return;}
+  var ini=document.getElementById('etIni').value,fim=document.getElementById('etFim').value;
+  for(var i=0;i<S.turnos.length;i++){
+    if(S.turnos[i].id===editId){
+      S.turnos[i]={id:editId,data:document.getElementById('etData').value,plataforma:document.getElementById('etPlat').value,faturamento:fat,km:parseFloat(document.getElementById('etKm').value)||0,corridas:parseInt(document.getElementById('etCor').value)||0,kmL:parseFloat(document.getElementById('etKmL').value)||0,minutos:mins(ini,fim),inicio:ini,fim:fim};
+      break;
+    }
+  }
+  persist(); closeModal('editar'); renderDia(); renderPainel();
+}
+function deletarTurno(){
+  if(!confirm('Apagar este turno?')) return;
+  S.turnos=S.turnos.filter(function(t){return t.id!==editId;});
+  persist(); closeModal('editar'); renderDia(); renderPainel();
+}
+
+function calcStats(turnos,despesas){
+  var fat=0,kmT=0,minT=0,despT=0,cor=0,gastoComb=0;
+  for(var i=0;i<turnos.length;i++){fat+=turnos[i].faturamento||0;kmT+=turnos[i].km||0;minT+=turnos[i].minutos||0;cor+=turnos[i].corridas||0;}
+  for(var j=0;j<despesas.length;j++){despT+=despesas[j].valor||0;}
+  if(S.precoComb>0){for(var k=0;k<turnos.length;k++){if(turnos[k].km>0&&turnos[k].kmL>0){gastoComb+=(turnos[k].km/turnos[k].kmL)*S.precoComb;}}}
+  var lucro=fat-despT-gastoComb;
+  var rph=minT>0?fat/(minT/60):0, rpk=kmT>0?fat/kmT:0;
+  var pctC=fat>0&&gastoComb>0?(gastoComb/fat)*100:0;
+  return {fat:fat,kmT:kmT,minT:minT,despT:despT,lucro:lucro,rph:rph,rpk:rpk,pctC:pctC,cor:cor,gastoComb:gastoComb};
+}
+
+function scard(lbl,val,col){ return '<div class="scard"><div class="slbl">'+lbl+'</div><div class="sval" style="color:'+col+'">'+val+'</div></div>'; }
+
+var cPlat=null,cMonth=null;
+function renderPainel(){
+  var n=new Date(),mes=n.getMonth(),ano=n.getFullYear();
+  var tM=S.turnos.filter(function(t){var p=t.data.split('-');var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return d.getMonth()===mes&&d.getFullYear()===ano;});
+  var dM=S.despesas.filter(function(d){var p=d.data.split('-');var dt=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return dt.getMonth()===mes&&dt.getFullYear()===ano;});
+  var c=calcStats(tM,dM);
+  document.getElementById('topBadge').textContent=brl(c.fat);
+  document.getElementById('pGreeting').textContent='Ola, '+S.config.nome+' 👋';
+  document.getElementById('pFat').textContent=brl(c.fat);
+  document.getElementById('pSub').textContent='Faturamento em '+n.toLocaleString('pt-BR',{month:'long'});
+  var dias=new Date(ano,mes+1,0).getDate(),diaria=S.meta/dias,esp=diaria*n.getDate(),onT=c.fat>=esp,pct=Math.min(100,(c.fat/S.meta)*100);
+  document.getElementById('pMetaCard').className='meta-card '+(onT?'meta-ok':'meta-off');
+  document.getElementById('pMetaInfo').textContent='Meta: '+brl(S.meta)+' · Diaria: '+brl(diaria);
+  document.getElementById('pMetaPct').textContent=pct.toFixed(1)+'%';
+  document.getElementById('pMetaPct').style.color=onT?'var(--accent)':'var(--red)';
+  document.getElementById('pMetaStatus').textContent=onT?'✅ No ritmo!':'⚠️ Abaixo do ritmo';
+  document.getElementById('pMetaBar').style.cssText='width:'+pct+'%;background:'+(onT?'var(--accent)':'var(--red)');
+  document.getElementById('pMetaFalta').textContent='Falta: '+brl(Math.max(0,S.meta-c.fat));
+  document.getElementById('pStats').innerHTML=scard('Lucro Real',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('KM Rodados',fkm(c.kmT),'var(--blue)')+scard('Horas Trab.',fh(c.minT),'var(--yellow)')+scard('R$/Hora',brl(c.rph),'var(--purple)')+scard('R$/KM',brl(c.rpk),'var(--blue)')+scard('% Combustivel',c.pctC.toFixed(1)+'%',c.pctC>30?'var(--red)':'var(--accent)');
+  var pm={};tM.forEach(function(t){pm[t.plataforma]=(pm[t.plataforma]||0)+(t.faturamento||0);});
+  var pk=Object.keys(pm);
+  if(pk.length>0){
+    document.getElementById('pPlatCard').style.display='block';
+    if(cPlat)cPlat.destroy();
+    cPlat=new Chart(document.getElementById('pPlatChart'),{type:'doughnut',data:{labels:pk,datasets:[{data:pk.map(function(k){return pm[k];}),backgroundColor:['#00e5a0','#3b82f6','#fbbf24','#a855f7','#ff4d6d','#06b6d4'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#9ca3af',font:{size:11},boxWidth:12}}}}});
+  } else {document.getElementById('pPlatCard').style.display='none';}
+  var mm={};S.turnos.forEach(function(t){var d=new Date(t.data);var k=d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1);mm[k]=(mm[k]||0)+(t.faturamento||0);});
+  var mk=Object.keys(mm).sort().slice(-6);
+  if(mk.length>1){
+    document.getElementById('pMonthCard').style.display='block';
+    if(cMonth)cMonth.destroy();
+    cMonth=new Chart(document.getElementById('pMonthChart'),{type:'bar',data:{labels:mk.map(function(k){return new Date(k+'-01').toLocaleString('pt-BR',{month:'short'});}),datasets:[{data:mk.map(function(k){return mm[k];}),backgroundColor:'#00e5a0',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b7280',font:{size:10}},grid:{display:false},border:{display:false}},y:{display:false}}}});
+  } else {document.getElementById('pMonthCard').style.display='none';}
+}
+
+function renderRegistrar(){
+  var list=S.abastecimentos.slice(0,5),al=document.getElementById('rAbastList');
+  if(!list.length){al.innerHTML='';return;}
+  var h='<div class="seclbl" style="margin-top:22px">⛽ Historico de Abastecimentos</div>';
+  list.forEach(function(a){h+='<div class="card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;margin-bottom:2px">'+a.tipo+' · '+a.litros.toFixed(2)+'L</div><div style="color:var(--muted);font-size:11px">'+new Date(a.data).toLocaleDateString('pt-BR')+(a.posto?' · '+a.posto:'')+'</div></div><div style="text-align:right"><div style="color:var(--yellow);font-weight:700;font-family:\'DM Mono\',monospace">'+brl(a.valorTotal)+'</div><div style="color:var(--muted);font-size:11px;margin-top:2px">R$ '+a.precoPorLitro.toFixed(3)+'/L</div></div></div></div>';});
+  al.innerHTML=h;
+}
+
+var dOff=0;
+function navDia(d){dOff+=d;renderDia();}
+function diaFromPicker(v){if(!v)return;var s=new Date(v+'T00:00:00'),t=new Date();t.setHours(0,0,0,0);dOff=Math.round((s-t)/86400000);renderDia();}
+function renderDia(){
+  var d=new Date();d.setDate(d.getDate()+dOff);d.setHours(0,0,0,0);
+  var ds=d.toISOString().split('T')[0];
+  document.getElementById('diaDatePicker').value=ds;
+  var tv=S.turnos.filter(function(t){return t.data===ds;}),dv=S.despesas.filter(function(x){return x.data===ds;});
+  var c=calcStats(tv,dv);
+  document.getElementById('diaStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Lucro Real',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('KM Rodados',fkm(c.kmT),'var(--blue)')+scard('Horas',fh(c.minT),'var(--yellow)')+scard('Corridas',c.cor||'-','var(--purple)')+scard('Despesas',brl(c.despT+c.gastoComb),'var(--red)');
+  var tl=document.getElementById('diaTurnos');
+  if(!tv.length){tl.innerHTML='<div class="empty">Nenhum turno neste dia</div>';return;}
+  var h='<div class="seclbl" style="margin-top:4px">Turnos — toque para editar</div>';
+  tv.forEach(function(t,i){
+    h+='<div class="card card-tap" style="margin-bottom:10px" onclick="abrirEdicao('+t.id+')">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+    +'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="badge">'+t.plataforma+'</span><span style="color:var(--muted);font-size:11px">Turno '+(i+1)+'</span></div>'
+    +'<div style="color:var(--muted);font-size:12px">'+fh(t.minutos)+' · '+fkm(t.km)+(t.kmL?' · '+parseFloat(t.kmL).toFixed(1)+' km/L':'')+(t.corridas?' · '+t.corridas+' corridas':'')+'</div></div>'
+    +'<div style="text-align:right"><div style="color:var(--accent);font-weight:800;font-family:\'DM Mono\',monospace">'+brl(t.faturamento)+'</div>'
+    +(t.minutos>0?'<div style="color:var(--muted);font-size:11px;margin-top:2px">'+brl(t.faturamento/(t.minutos/60))+'/h</div>':'')
+    +'<div style="color:var(--muted);font-size:10px;margin-top:4px">✏️ editar</div></div></div></div>';
+  });
+  tl.innerHTML=h;
+}
+
+var rPer='semana',rOff=0,cDay=null;
+function setPeriodo(p,btn){rPer=p;rOff=0;document.querySelectorAll('.period-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderResumo();}
+function navPeriodo(d){rOff+=d;renderResumo();}
+function getRange(){
+  var n=new Date();
+  if(rPer==='semana'){var dy=n.getDay()===0?6:n.getDay()-1;var s=new Date(n);s.setDate(n.getDate()-dy+rOff*7);s.setHours(0,0,0,0);var e=new Date(s);e.setDate(s.getDate()+6);e.setHours(23,59,59,999);return{s:s,e:e,lbl:'Semana: '+s.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' - '+e.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})};}
+  if(rPer==='mes'){var dm=new Date(n.getFullYear(),n.getMonth()+rOff,1);var s2=new Date(dm.getFullYear(),dm.getMonth(),1);var e2=new Date(dm.getFullYear(),dm.getMonth()+1,0,23,59,59,999);var l=dm.toLocaleString('pt-BR',{month:'long',year:'numeric'});return{s:s2,e:e2,lbl:l.charAt(0).toUpperCase()+l.slice(1)};}
+  var yr=n.getFullYear()+rOff;return{s:new Date(yr,0,1),e:new Date(yr,11,31,23,59,59,999),lbl:String(yr)};
+}
+function renderResumo(){
+  var r=getRange();document.getElementById('rPeriodoLbl').textContent=r.lbl;
+  var tf=S.turnos.filter(function(t){var p=t.data.split('-');var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return d>=r.s&&d<=r.e;});
+  var df=S.despesas.filter(function(d){var p=d.data.split('-');var dt=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return dt>=r.s&&dt<=r.e;});
+  var c=calcStats(tf,df);
+  var totalDesp=c.despT+c.gastoComb;
+  document.getElementById('rStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Despesas',brl(totalDesp),'var(--red)')+scard('Lucro',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('Corridas',c.cor||'-','var(--blue)')+scard('KM',fkm(c.kmT),'var(--purple)')+scard('Horas',fh(c.minT),'var(--yellow)');
+  var dm={};tf.forEach(function(t){var k=new Date(t.data).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});dm[k]=(dm[k]||0)+(t.faturamento||0);});
+  var dk=Object.keys(dm);
+  if(dk.length>1){document.getElementById('rDayCard').style.display='block';if(cDay)cDay.destroy();cDay=new Chart(document.getElementById('rDayChart'),{type:'line',data:{labels:dk,datasets:[{data:dk.map(function(k){return dm[k];}),borderColor:'#00e5a0',borderWidth:2.5,pointRadius:0,tension:0.4,fill:true,backgroundColor:'rgba(0,229,160,0.08)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b7280',font:{size:10},maxRotation:0},grid:{display:false},border:{display:false}},y:{display:false}}}});}
+  else{document.getElementById('rDayCard').style.display='none';}
+  var cm={};df.forEach(function(d){cm[d.categoria]=(cm[d.categoria]||0)+(d.valor||0);});
+  if(c.gastoComb>0){cm['Combustivel']=(cm['Combustivel']||0)+c.gastoComb;}
+  var ck=Object.keys(cm).sort(function(a,b){return cm[b]-cm[a];});
+  if(ck.length>0){document.getElementById('rCatCard').style.display='block';var h='';ck.forEach(function(cat){var pct=totalDesp>0?Math.min(100,(cm[cat]/totalDesp)*100):0;h+='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px">'+cat+'</span><span style="color:var(--red);font-family:\'DM Mono\',monospace;font-size:13px">'+brl(cm[cat])+'</span></div><div class="pbar"><div class="pbar-fill" style="width:'+pct+'%;background:var(--red)"></div></div></div>';});document.getElementById('rCatList').innerHTML=h;}
+  else{document.getElementById('rCatCard').style.display='none';}
+}
+
+function renderConfig(){
+  document.getElementById('cfgNome').value=S.config.nome||'';
+  document.getElementById('cfgVeiculo').value=S.config.veiculo||'';
+  document.getElementById('cfgPlaca').value=S.config.placa||'';
+  document.getElementById('cfgPreco').value=S.precoComb||'';
+  document.getElementById('cfgMeta').value=S.meta||5000;
+  document.getElementById('cfgCntT').textContent=S.turnos.length;
+  document.getElementById('cfgCntD').textContent=S.despesas.length;
+  document.getElementById('cfgCntA').textContent=S.abastecimentos.length;
+}
+function salvarConfig(){
+  S.config.nome=document.getElementById('cfgNome').value||'Motorista';
+  S.config.veiculo=document.getElementById('cfgVeiculo').value;
+  S.config.placa=document.getElementById('cfgPlaca').value;
+  S.precoComb=parseFloat(document.getElementById('cfgPreco').value)||0;
+  S.meta=parseFloat(document.getElementById('cfgMeta').value)||5000;
+  persist();alert('Configuracoes salvas!');renderPainel();
+}
+function limparDados(){
+  if(!confirm('Apagar TODOS os dados?')) return;
+  S=JSON.parse(JSON.stringify(DFLT));persist();renderPainel();renderConfig();
+}
+
+function exportCSV(){
+  var rows=[['Data','Plataforma','Faturamento','KM','Horas','Corridas','km/L']];
+  S.turnos.forEach(function(t){rows.push([t.data,t.plataforma,t.faturamento,t.km,(t.minutos/60).toFixed(2),t.corridas,t.kmL||'']);});
+  var csv=rows.map(function(r){return r.join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='motorista-pro.csv';a.click();
+}
+
+renderPainel();
+</script>
+</body>
+</html>
