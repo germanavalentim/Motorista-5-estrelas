@@ -81,12 +81,24 @@ canvas{max-width:100%;}
 <div id="loginScreen" style="display:flex;position:fixed;inset:0;background:#0a0e1a;z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
   <div style="font-size:52px;margin-bottom:16px">🚗</div>
   <div style="font-size:22px;font-weight:800;margin-bottom:6px;font-family:'DM Sans',sans-serif">Motorista Pro</div>
-  <div style="color:#6b7280;font-size:13px;margin-bottom:40px;font-family:'DM Sans',sans-serif">Controle Financeiro</div>
-  <button onclick="netlifyIdentity.open()" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px 40px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;max-width:320px;">Entrar</button>
-  <div style="color:#6b7280;font-size:12px;margin-top:20px;text-align:center;font-family:'DM Sans',sans-serif">Acesso restrito. Solicite um convite ao administrador.</div>
+  <div style="color:#6b7280;font-size:13px;margin-bottom:32px;font-family:'DM Sans',sans-serif">Controle Financeiro</div>
+  <div style="width:100%;max-width:320px">
+    <div style="margin-bottom:12px">
+      <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">E-mail</label>
+      <input id="loginEmail" type="email" autocomplete="email" placeholder="seu@email.com" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+    </div>
+    <div id="senhaDiv" style="margin-bottom:20px">
+      <label style="display:block;color:#6b7280;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif">Senha</label>
+      <input id="loginSenha" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;background:#1a2233;border:1px solid #1f2937;border-radius:10px;color:#f9fafb;padding:12px 14px;font-size:16px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;">
+    </div>
+    <button id="btnEntrar" onclick="fazerLogin()" style="background:#00e5a0;color:#0a0e1a;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;margin-bottom:12px;">Entrar</button>
+    <button id="btnEsqueci" onclick="mostrarEsqueci()" style="background:transparent;color:#6b7280;border:none;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;padding:8px;">Esqueci minha senha</button>
+    <div id="loginMsg" style="font-size:12px;margin-top:8px;text-align:center;font-family:'DM Sans',sans-serif;min-height:16px;color:#ff4d6d"></div>
+  </div>
+  <div style="color:#6b7280;font-size:11px;margin-top:24px;text-align:center;font-family:'DM Sans',sans-serif">Acesso restrito. Solicite um convite ao administrador.</div>
 </div>
 
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script src="https://unpkg.com/gotrue-js@0.9.29/dist/gotrue.js"></script>
 
 <!-- APP (oculto até login) -->
 
@@ -621,6 +633,11 @@ renderPainel();
 </div><!-- /appContent -->
 
 <script>
+var auth = new GoTrue({
+  APIUrl: 'https://mellifluous-cupcake-0dd1f3.netlify.app/.netlify/identity',
+  setCookie: true
+});
+
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
@@ -630,24 +647,48 @@ function showLogin() {
   document.getElementById('appContent').style.display = 'none';
 }
 
-if (typeof netlifyIdentity !== 'undefined') {
-  netlifyIdentity.on('init', function(user) {
-    if (user) { showApp(); } else { showLogin(); }
-  });
-  netlifyIdentity.on('login', function() {
-    netlifyIdentity.close();
-    showApp();
-  });
-  netlifyIdentity.on('logout', function() { showLogin(); });
-  netlifyIdentity.init();
-} else {
-  showApp();
+function setMsg(txt, cor) {
+  var el = document.getElementById('loginMsg');
+  el.textContent = txt;
+  el.style.color = cor || '#ff4d6d';
+}
+
+function fazerLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var senha = document.getElementById('loginSenha').value;
+  if (!email || !senha) { setMsg('Preencha e-mail e senha'); return; }
+  setMsg('Entrando...', '#6b7280');
+  document.getElementById('btnEntrar').disabled = true;
+  auth.login(email, senha, true)
+    .then(function() { showApp(); })
+    .catch(function() {
+      setMsg('E-mail ou senha incorretos');
+      document.getElementById('btnEntrar').disabled = false;
+    });
+}
+
+function mostrarEsqueci() {
+  var email = document.getElementById('loginEmail').value.trim();
+  if (!email) { setMsg('Digite seu e-mail primeiro'); return; }
+  setMsg('Enviando...', '#6b7280');
+  auth.requestPasswordRecovery(email)
+    .then(function() { setMsg('E-mail enviado! Verifique sua caixa de entrada.', '#00e5a0'); })
+    .catch(function() { setMsg('Erro ao enviar. Verifique o e-mail digitado.'); });
 }
 
 var _netlifyLogout = function() {
-  if (typeof netlifyIdentity !== 'undefined') { netlifyIdentity.logout(); }
+  var u = auth.currentUser();
+  if (u) { u.logout().then(showLogin).catch(showLogin); }
   else { showLogin(); }
 };
+
+// Verifica se já está logado
+(function() {
+  try {
+    var u = auth.currentUser();
+    if (u) { showApp(); } else { showLogin(); }
+  } catch(e) { showLogin(); }
+})();
 </script>
 
 </body>
