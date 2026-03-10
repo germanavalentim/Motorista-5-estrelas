@@ -551,7 +551,7 @@ function renderDia(){
   document.getElementById('diaDatePicker').value=ds;
   var tv=S.turnos.filter(function(t){return t.data===ds;}),dv=S.despesas.filter(function(x){return x.data===ds;});
   var c=calcStats(tv,dv);
-  document.getElementById('diaStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Lucro Real',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('KM Rodados',fkm(c.kmT),'var(--blue)')+scard('Horas',fh(c.minT),'var(--yellow)')+scard('Corridas',c.cor||'-','var(--purple)')+scard('Despesas',brl(c.despT+c.gastoComb),'var(--red)');
+  document.getElementById('diaStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Lucro Real',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('KM Rodados',fkm(c.kmT),'var(--blue)')+scard('Horas',fh(c.minT),'var(--yellow)')+scard('Corridas',c.cor||'-','var(--purple)')+scard('Despesas',brl(c.despT+c.gastoComb),'var(--red)')+scard('R$/km',c.kmT>0?brl(c.fat/c.kmT):'-','var(--accent)')+scard('R$/hora',c.minT>0?brl(c.fat/(c.minT/60)):'-','var(--yellow)');
   var tl=document.getElementById('diaTurnos');
   if(!tv.length){tl.innerHTML='<div class="empty">Nenhum turno neste dia</div>';return;}
   var h='<div class="seclbl" style="margin-top:4px">Turnos — toque para editar</div>';
@@ -582,7 +582,7 @@ function renderResumo(){
   var df=S.despesas.filter(function(d){var p=d.data.split('-');var dt=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return dt>=r.s&&dt<=r.e;});
   var c=calcStats(tf,df);
   var totalDesp=c.despT+c.gastoComb;
-  document.getElementById('rStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Despesas',brl(totalDesp),'var(--red)')+scard('Lucro',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('Corridas',c.cor||'-','var(--blue)')+scard('KM',fkm(c.kmT),'var(--purple)')+scard('Horas',fh(c.minT),'var(--yellow)');
+  document.getElementById('rStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Despesas',brl(totalDesp),'var(--red)')+scard('Lucro',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('Corridas',c.cor||'-','var(--blue)')+scard('KM',fkm(c.kmT),'var(--purple)')+scard('Horas',fh(c.minT),'var(--yellow)')+scard('R$/km',c.kmT>0?brl(c.fat/c.kmT):'-','var(--accent)')+scard('R$/hora',c.minT>0?brl(c.fat/(c.minT/60)):'-','var(--yellow)');
   var dm={};tf.forEach(function(t){var k=new Date(t.data).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});dm[k]=(dm[k]||0)+(t.faturamento||0);});
   var dk=Object.keys(dm);
   if(dk.length>1){document.getElementById('rDayCard').style.display='block';if(cDay)cDay.destroy();cDay=new Chart(document.getElementById('rDayChart'),{type:'line',data:{labels:dk,datasets:[{data:dk.map(function(k){return dm[k];}),borderColor:'#00e5a0',borderWidth:2.5,pointRadius:0,tension:0.4,fill:true,backgroundColor:'rgba(0,229,160,0.08)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b7280',font:{size:10},maxRotation:0},grid:{display:false},border:{display:false}},y:{display:false}}}});}
