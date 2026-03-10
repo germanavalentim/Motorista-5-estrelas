@@ -255,6 +255,11 @@ canvas{max-width:100%;}
         </div>
       </div>
       <button class="btn btn-d btn-fw" onclick="limparDados()">Limpar Todos os Dados</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+        <button class="btn btn-o" onclick="exportarJSON()">⬇️ Backup JSON</button>
+        <button class="btn btn-o" onclick="document.getElementById('importInput').click()">⬆️ Restaurar</button>
+      </div>
+      <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarJSON(event)">
       <button class="btn btn-fw" style="margin-top:10px;background:#1f2937;color:var(--muted)" onclick="_netlifyLogout()">Sair da conta</button>
     </div>
   </div>
@@ -615,6 +620,34 @@ function salvarConfig(){
 function limparDados(){
   if(!confirm('Apagar TODOS os dados?')) return;
   S=JSON.parse(JSON.stringify(DFLT));persist();renderPainel();renderConfig();
+}
+
+function exportarJSON(){
+  var dados = JSON.stringify(S, null, 2);
+  var nome = 'motorista-pro-backup-' + todayStr() + '.json';
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([dados], {type:'application/json'}));
+  a.download = nome; a.click();
+}
+
+function importarJSON(event){
+  var file = event.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      var dados = JSON.parse(e.target.result);
+      if(!dados.turnos || !dados.despesas) { alert('Arquivo inválido!'); return; }
+      if(!confirm('Isso vai substituir todos os dados atuais. Continuar?')) return;
+      S = dados;
+      persist();
+      renderPainel();
+      renderConfig();
+      alert('✅ Dados restaurados com sucesso!');
+    } catch(err) { alert('Erro ao ler o arquivo. Verifique se é um backup válido.'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
 function exportCSV(){
