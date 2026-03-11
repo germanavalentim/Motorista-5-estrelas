@@ -522,7 +522,9 @@ function renderPainel(){
   document.getElementById('pMetaInfo').textContent='Meta: '+brl(S.meta)+' · Diaria: '+brl(diaria);
   document.getElementById('pMetaPct').textContent=pct.toFixed(1)+'%';
   document.getElementById('pMetaPct').style.color=onT?'var(--accent)':'var(--red)';
-  document.getElementById('pMetaStatus').textContent=onT?'✅ No ritmo!':'⚠️ Abaixo do ritmo';
+  var diff=c.fat-esp;
+  var diffTxt=(diff>=0?'+':'')+brl(diff);
+  document.getElementById('pMetaStatus').innerHTML=(onT?'✅ No ritmo! ':'⚠️ Abaixo do ritmo ')+'<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:'+(onT?'var(--accent)':'var(--red)')+'">'+diffTxt+'</span>';
   document.getElementById('pMetaBar').style.cssText='width:'+pct+'%;background:'+(onT?'var(--accent)':'var(--red)');
   document.getElementById('pMetaFalta').textContent='Falta: '+brl(Math.max(0,S.meta-c.fat));
   document.getElementById('pStats').innerHTML=scard('Lucro Real',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('KM Rodados',fkm(c.kmT),'var(--blue)')+scard('Horas Trab.',fh(c.minT),'var(--yellow)')+scard('R$/Hora',brl(c.rph),'var(--purple)')+scard('R$/KM',brl(c.rpk),'var(--blue)')+scard('% Combustivel',c.pctC.toFixed(1)+'%',c.pctC>30?'var(--red)':'var(--accent)');
