@@ -191,6 +191,7 @@ canvas{max-width:100%;}
         <button class="nav-arr" onclick="navDia(1)">&#8250;</button>
       </div>
       <div class="grid2" id="diaStats"></div>
+      <div id="diaMetaCard" style="margin-bottom:12px"></div>
       <div id="diaTurnos"></div>
     </div>
   </div>
@@ -222,6 +223,7 @@ canvas{max-width:100%;}
         <div class="seclbl">&#128176; Despesas por Categoria</div>
         <div id="rCatList"></div>
       </div>
+      <div id="rDiasBatidos" style="display:none;margin-top:12px"></div>
     </div>
   </div>
 
@@ -244,6 +246,7 @@ canvas{max-width:100%;}
       <div class="card" style="margin-bottom:12px">
         <div class="seclbl">&#127919; Meta Mensal</div>
         <div class="ig"><label class="il">Valor (R$)</label><input class="ifield" id="cfgMeta" type="number" inputmode="numeric" placeholder="5000"></div>
+        <div class="ig"><label class="il">Dias que vou trabalhar no mes</label><input class="ifield" id="cfgDias" type="number" inputmode="numeric" placeholder="ex: 22" min="1" max="31"></div>
       </div>
       <button class="btn btn-p btn-fw" style="margin-bottom:16px" onclick="salvarConfig()">Salvar Configuracoes</button>
       <div class="card" style="margin-bottom:12px">
@@ -374,7 +377,7 @@ canvas{max-width:100%;}
 </div>
 
 <script>
-var DFLT = {meta:5000,precoComb:0,turnos:[],despesas:[],abastecimentos:[],config:{nome:'Motorista',veiculo:'',placa:''}};
+var DFLT = {meta:5000,diasTrabalho:22,precoComb:0,turnos:[],despesas:[],abastecimentos:[],config:{nome:'Motorista',veiculo:'',placa:''}};
 var S = (function(){ try { var d=JSON.parse(localStorage.getItem('moto_pro')); return d||JSON.parse(JSON.stringify(DFLT)); } catch(e){ return JSON.parse(JSON.stringify(DFLT)); } })();
 function persist(){ try{ localStorage.setItem('moto_pro',JSON.stringify(S)); }catch(e){} }
 
@@ -514,7 +517,7 @@ function renderPainel(){
   document.getElementById('pGreeting').textContent='Ola, '+S.config.nome+' 👋';
   document.getElementById('pFat').textContent=brl(c.fat);
   document.getElementById('pSub').textContent='Faturamento em '+n.toLocaleString('pt-BR',{month:'long'});
-  var dias=new Date(ano,mes+1,0).getDate(),diaria=S.meta/dias,esp=diaria*n.getDate(),onT=c.fat>=esp,pct=Math.min(100,(c.fat/S.meta)*100);
+  var dias=S.diasTrabalho||22,diaria=S.meta/dias,esp=diaria*n.getDate(),onT=c.fat>=esp,pct=Math.min(100,(c.fat/S.meta)*100);
   document.getElementById('pMetaCard').className='meta-card '+(onT?'meta-ok':'meta-off');
   document.getElementById('pMetaInfo').textContent='Meta: '+brl(S.meta)+' · Diaria: '+brl(diaria);
   document.getElementById('pMetaPct').textContent=pct.toFixed(1)+'%';
@@ -557,6 +560,21 @@ function renderDia(){
   var tv=S.turnos.filter(function(t){return t.data===ds;}),dv=S.despesas.filter(function(x){return x.data===ds;});
   var c=calcStats(tv,dv);
   document.getElementById('diaStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Lucro Real',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('KM Rodados',fkm(c.kmT),'var(--blue)')+scard('Horas',fh(c.minT),'var(--yellow)')+scard('Corridas',c.cor||'-','var(--purple)')+scard('Despesas',brl(c.despT+c.gastoComb),'var(--red)')+scard('R$/km',c.kmT>0?brl(c.fat/c.kmT):'-','var(--accent)')+scard('R$/hora',c.minT>0?brl(c.fat/(c.minT/60)):'-','var(--yellow)');
+  // Meta do dia
+  var diaria=S.meta/(S.diasTrabalho||22);
+  var bateu=c.fat>=diaria;
+  var pctDia=diaria>0?Math.min(100,(c.fat/diaria)*100):0;
+  var mc=document.getElementById('diaMetaCard');
+  if(tv.length){
+    mc.innerHTML='<div class="meta-card '+(bateu?'meta-ok':'meta-off')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      +'<span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:'+(bateu?'var(--accent)':'var(--red)')+'">🎯 META DO DIA</span>'
+      +'<span style="font-size:18px;font-weight:800;font-family:\'DM Mono\',monospace;color:'+(bateu?'var(--accent)':'var(--red)')+'">'+pctDia.toFixed(0)+'%</span>'
+      +'</div>'
+      +'<div style="font-size:13px;margin-bottom:8px">Meta: '+brl(diaria)+' · '+(bateu?'✅ Bateu a meta!':'⚠️ Faltam '+brl(diaria-c.fat))+'</div>'
+      +'<div class="pbar"><div class="pbar-fill" style="width:'+pctDia+'%;background:'+(bateu?'var(--accent)':'var(--red)')+'"></div></div>'
+      +'</div>';
+  } else { mc.innerHTML=''; }
   var tl=document.getElementById('diaTurnos');
   if(!tv.length){tl.innerHTML='<div class="empty">Nenhum turno neste dia</div>';return;}
   var h='<div class="seclbl" style="margin-top:4px">Turnos — toque para editar</div>';
@@ -597,6 +615,52 @@ function renderResumo(){
   var ck=Object.keys(cm).sort(function(a,b){return cm[b]-cm[a];});
   if(ck.length>0){document.getElementById('rCatCard').style.display='block';var h='';ck.forEach(function(cat){var pct=totalDesp>0?Math.min(100,(cm[cat]/totalDesp)*100):0;h+='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px">'+cat+'</span><span style="color:var(--red);font-family:\'DM Mono\',monospace;font-size:13px">'+brl(cm[cat])+'</span></div><div class="pbar"><div class="pbar-fill" style="width:'+pct+'%;background:var(--red)"></div></div></div>';});document.getElementById('rCatList').innerHTML=h;}
   else{document.getElementById('rCatCard').style.display='none';}
+
+  // Dias batidos (só semana e mes)
+  if(rPer==='semana'||rPer==='mes'){
+    var diaria=S.meta/(S.diasTrabalho||22);
+    // Agrupa faturamento por dia
+    var fatDia={};
+    tf.forEach(function(t){ fatDia[t.data]=(fatDia[t.data]||0)+(t.faturamento||0); });
+    var dias=Object.keys(fatDia).sort();
+    var batidos=dias.filter(function(d){return fatDia[d]>=diaria;});
+    var naoB=dias.filter(function(d){return fatDia[d]<diaria;});
+    var total=dias.length;
+    if(total>0){
+      var aberto=false;
+      var detalhes='';
+      dias.forEach(function(d){
+        var ok=fatDia[d]>=diaria;
+        var dt=new Date(d+'T00:00:00');
+        var lbl=dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+        lbl=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+        detalhes+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1f2937;font-size:13px;">'
+          +'<span>'+(ok?'✅':'❌')+' '+lbl+'</span>'
+          +'<span style="font-family:\'DM Mono\',monospace;color:'+(ok?'var(--accent)':'var(--red)')+'">'+brl(fatDia[d])+'</span>'
+          +'</div>';
+      });
+      document.getElementById('rDiasBatidos').style.display='block';
+      document.getElementById('rDiasBatidos').innerHTML=
+        '<div class="card" style="cursor:pointer" onclick="toggleDiasBatidos(this)">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center">'
+        +'<span style="font-weight:700;font-size:14px">🎯 '+batidos.length+' de '+total+' dias batidos</span>'
+        +'<span style="color:var(--muted);font-size:12px" id="rDiasBatidosArrow">Ver ▼</span>'
+        +'</div>'
+        +'<div id="rDiasBatidosDetalhe" style="display:none;margin-top:10px">'+detalhes+'</div>'
+        +'</div>';
+    } else {
+      document.getElementById('rDiasBatidos').style.display='none';
+    }
+  } else {
+    document.getElementById('rDiasBatidos').style.display='none';
+  }
+}
+
+function toggleDiasBatidos(el){
+  var d=document.getElementById('rDiasBatidosDetalhe');
+  var a=document.getElementById('rDiasBatidosArrow');
+  if(d.style.display==='none'){d.style.display='block';a.textContent='Fechar ▲';}
+  else{d.style.display='none';a.textContent='Ver ▼';}
 }
 
 function renderConfig(){
@@ -605,6 +669,7 @@ function renderConfig(){
   document.getElementById('cfgPlaca').value=S.config.placa||'';
   document.getElementById('cfgPreco').value=S.precoComb||'';
   document.getElementById('cfgMeta').value=S.meta||5000;
+  document.getElementById('cfgDias').value=S.diasTrabalho||22;
   document.getElementById('cfgCntT').textContent=S.turnos.length;
   document.getElementById('cfgCntD').textContent=S.despesas.length;
   document.getElementById('cfgCntA').textContent=S.abastecimentos.length;
@@ -615,6 +680,7 @@ function salvarConfig(){
   S.config.placa=document.getElementById('cfgPlaca').value;
   S.precoComb=parseFloat(document.getElementById('cfgPreco').value)||0;
   S.meta=parseFloat(document.getElementById('cfgMeta').value)||5000;
+  S.diasTrabalho=parseInt(document.getElementById('cfgDias').value)||22;
   persist();alert('Configuracoes salvas!');renderPainel();
 }
 function limparDados(){
