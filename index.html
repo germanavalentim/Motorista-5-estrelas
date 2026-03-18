@@ -442,7 +442,7 @@ function salvarTurno(){
   var fat=parseFloat(document.getElementById('tFat').value)||0;
   if(fat<=0){alert('Informe o faturamento');return;}
   var ini=document.getElementById('tIni').value, fim=document.getElementById('tFim').value;
-  S.turnos.unshift({id:Date.now(),data:document.getElementById('tData').value,plataforma:document.getElementById('tPlat').value,faturamento:fat,km:parseFloat(document.getElementById('tKm').value)||0,corridas:parseInt(document.getElementById('tCor').value)||0,kmL:parseFloat(document.getElementById('tKmL').value)||0,minutos:mins(ini,fim),inicio:ini,fim:fim});
+  S.turnos.unshift({id:Date.now(),data:document.getElementById('tData').value,plataforma:document.getElementById('tPlat').value,faturamento:fat,km:parseFloat(document.getElementById('tKm').value)||0,corridas:parseInt(document.getElementById('tCor').value)||0,kmL:parseFloat(document.getElementById('tKmL').value)||0,minutos:mins(ini,fim),inicio:ini,fim:fim,precoComb:S.precoComb||0});
   persist(); closeModal('turno'); renderPainel();
 }
 
@@ -482,7 +482,7 @@ function salvarEdicao(){
   var ini=document.getElementById('etIni').value,fim=document.getElementById('etFim').value;
   for(var i=0;i<S.turnos.length;i++){
     if(S.turnos[i].id===editId){
-      S.turnos[i]={id:editId,data:document.getElementById('etData').value,plataforma:document.getElementById('etPlat').value,faturamento:fat,km:parseFloat(document.getElementById('etKm').value)||0,corridas:parseInt(document.getElementById('etCor').value)||0,kmL:parseFloat(document.getElementById('etKmL').value)||0,minutos:mins(ini,fim),inicio:ini,fim:fim};
+      S.turnos[i]={id:editId,data:document.getElementById('etData').value,plataforma:document.getElementById('etPlat').value,faturamento:fat,km:parseFloat(document.getElementById('etKm').value)||0,corridas:parseInt(document.getElementById('etCor').value)||0,kmL:parseFloat(document.getElementById('etKmL').value)||0,minutos:mins(ini,fim),inicio:ini,fim:fim,precoComb:S.turnos[i].precoComb||S.precoComb||0};
       break;
     }
   }
@@ -498,7 +498,7 @@ function calcStats(turnos,despesas){
   var fat=0,kmT=0,minT=0,despT=0,cor=0,gastoComb=0;
   for(var i=0;i<turnos.length;i++){fat+=turnos[i].faturamento||0;kmT+=turnos[i].km||0;minT+=turnos[i].minutos||0;cor+=turnos[i].corridas||0;}
   for(var j=0;j<despesas.length;j++){despT+=despesas[j].valor||0;}
-  if(S.precoComb>0){for(var k=0;k<turnos.length;k++){if(turnos[k].km>0&&turnos[k].kmL>0){gastoComb+=(turnos[k].km/turnos[k].kmL)*S.precoComb;}}}
+  if(true){for(var k=0;k<turnos.length;k++){var pc=turnos[k].precoComb||S.precoComb||0;if(pc>0&&turnos[k].km>0&&turnos[k].kmL>0){gastoComb+=(turnos[k].km/turnos[k].kmL)*pc;}}}
   var lucro=fat-despT-gastoComb;
   var rph=minT>0?fat/(minT/60):0, rpk=kmT>0?fat/kmT:0;
   var pctC=fat>0&&gastoComb>0?(gastoComb/fat)*100:0;
