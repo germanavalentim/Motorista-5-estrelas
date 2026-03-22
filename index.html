@@ -817,7 +817,8 @@ function renderResumo(){
       var aberto=false;
       var detalhes='';
       dias.forEach(function(d){
-        var ok=fatDia[d]>=diaria;
+        var metaDia=getMetaDia(d);
+        var ok=fatDia[d]>=metaDia;
         var dt=new Date(d+'T00:00:00');
         var lbl=dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
         lbl=lbl.charAt(0).toUpperCase()+lbl.slice(1);
