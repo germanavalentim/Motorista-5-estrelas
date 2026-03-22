@@ -249,24 +249,64 @@ canvas{max-width:100%;}
         <div class="ig"><label class="il">Dias que vou trabalhar no mes</label><input class="ifield" id="cfgDias" type="number" inputmode="numeric" placeholder="ex: 22" min="1" max="31"></div>
       </div>
       <button class="btn btn-p btn-fw" style="margin-bottom:16px" onclick="salvarConfig()">Salvar Configuracoes</button>
-      <div class="card" style="margin-bottom:12px">
-        <div class="seclbl">Dados Salvos</div>
-        <div style="display:flex;gap:28px">
-          <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent)" id="cfgCntT">0</div><div style="color:var(--muted);font-size:11px">Turnos</div></div>
-          <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--red)" id="cfgCntD">0</div><div style="color:var(--muted);font-size:11px">Despesas</div></div>
-          <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--yellow)" id="cfgCntA">0</div><div style="color:var(--muted);font-size:11px">Abastec.</div></div>
-        </div>
-      </div>
-      <button class="btn btn-d btn-fw" onclick="limparDados()">Limpar Todos os Dados</button>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
-        <button class="btn btn-o" onclick="exportarJSON()">⬇️ Backup JSON</button>
-        <button class="btn btn-o" onclick="document.getElementById('importInput').click()">⬆️ Restaurar</button>
-      </div>
-      <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarJSON(event)">
-      <button class="btn btn-fw" style="margin-top:10px;background:#1f2937;color:var(--muted)" onclick="_netlifyLogout()">Sair da conta</button>
+
+```
+  <!-- METAS MENSAIS -->
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="seclbl" style="margin-bottom:0">🗓 Metas Mensais</div>
+      <button class="btn btn-o btn-sm" onclick="abrirNovaMetaMensal()">+ Adicionar</button>
+    </div>
+    <div id="metasMensaisList"></div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="seclbl">Dados Salvos</div>
+    <div style="display:flex;gap:28px">
+      <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent)" id="cfgCntT">0</div><div style="color:var(--muted);font-size:11px">Turnos</div></div>
+      <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--red)" id="cfgCntD">0</div><div style="color:var(--muted);font-size:11px">Despesas</div></div>
+      <div><div style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;color:var(--yellow)" id="cfgCntA">0</div><div style="color:var(--muted);font-size:11px">Abastec.</div></div>
     </div>
   </div>
+  <button class="btn btn-d btn-fw" onclick="limparDados()">Limpar Todos os Dados</button>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+    <button class="btn btn-o" onclick="exportarJSON()">⬇️ Backup JSON</button>
+    <button class="btn btn-o" onclick="document.getElementById('importInput').click()">⬆️ Restaurar</button>
+  </div>
+  <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarJSON(event)">
+  <button class="btn btn-fw" style="margin-top:10px;background:#1f2937;color:var(--muted)" onclick="_netlifyLogout()">Sair da conta</button>
+</div>
+```
 
+  </div>
+
+</div>
+
+<!-- MODAL META MENSAL -->
+
+<div class="overlay" id="modal-metamensal" onclick="closeModal('metamensal')">
+  <div class="mbox" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    <div class="mhdr"><span class="mtitle">Meta do Mês</span><button class="mclose" onclick="closeModal('metamensal')">x</button></div>
+    <div class="ig">
+      <label class="il">Mês</label>
+      <input class="ifield" type="month" id="mmMes">
+    </div>
+    <div class="ig">
+      <label class="il">Meta Mensal (R$)</label>
+      <input class="ifield" type="number" inputmode="numeric" id="mmMetaTotal" placeholder="ex: 5000" oninput="calcPreviewMeta()">
+    </div>
+    <div style="color:var(--muted);font-size:11px;margin-bottom:14px;line-height:1.5">Defina quanto quer ganhar por dia da semana. O app calcula se bate a meta mensal.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="ig"><label class="il">Segunda</label><input class="ifield" type="number" inputmode="decimal" id="mmSeg" placeholder="0" oninput="calcPreviewMeta()"></div>
+      <div class="ig"><label class="il">Terça</label><input class="ifield" type="number" inputmode="decimal" id="mmTer" placeholder="0" oninput="calcPreviewMeta()"></div>
+      <div class="ig"><label class="il">Quarta</label><input class="ifield" type="number" inputmode="decimal" id="mmQua" placeholder="0" oninput="calcPreviewMeta()"></div>
+      <div class="ig"><label class="il">Quinta</label><input class="ifield" type="number" inputmode="decimal" id="mmQui" placeholder="0" oninput="calcPreviewMeta()"></div>
+      <div class="ig"><label class="il">Sexta</label><input class="ifield" type="number" inputmode="decimal" id="mmSex" placeholder="0" oninput="calcPreviewMeta()"></div>
+      <div class="ig"><label class="il">Sábado</label><input class="ifield" type="number" inputmode="decimal" id="mmSab" placeholder="0" oninput="calcPreviewMeta()"></div>
+      <div class="ig"><label class="il">Domingo</label><input class="ifield" type="number" inputmode="decimal" id="mmDom" placeholder="0" oninput="calcPreviewMeta()"></div>
+    </div>
+    <div id="mmPreview" style="background:#1a2233;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;line-height:1.8;display:none"></div>
+    <button class="btn btn-p btn-fw" onclick="salvarMetaMensal()">Salvar Meta</button>
+  </div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -377,7 +417,7 @@ canvas{max-width:100%;}
 </div>
 
 <script>
-var DFLT = {meta:5000,diasTrabalho:22,precoComb:0,turnos:[],despesas:[],abastecimentos:[],config:{nome:'Motorista',veiculo:'',placa:''}};
+var DFLT = {meta:5000,diasTrabalho:22,precoComb:0,turnos:[],despesas:[],abastecimentos:[],metasMensais:[],config:{nome:'Motorista',veiculo:'',placa:''}};
 var S = (function(){ try { var d=JSON.parse(localStorage.getItem('moto_pro')); return d||JSON.parse(JSON.stringify(DFLT)); } catch(e){ return JSON.parse(JSON.stringify(DFLT)); } })();
 function persist(){ try{ localStorage.setItem('moto_pro',JSON.stringify(S)); }catch(e){} }
 
@@ -508,6 +548,139 @@ function calcStats(turnos,despesas){
 function scard(lbl,val,col){ return '<div class="scard"><div class="slbl">'+lbl+'</div><div class="sval" style="color:'+col+'">'+val+'</div></div>'; }
 
 var cPlat=null,cMonth=null;
+// ===== METAS MENSAIS =====
+var DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+var DIAS_IDS = ['mmDom','mmSeg','mmTer','mmQua','mmQui','mmSex','mmSab'];
+
+function getMetaMensal(anoMes) {
+  if(!S.metasMensais) return null;
+  for(var i=0;i<S.metasMensais.length;i++){
+    if(S.metasMensais[i].mes===anoMes) return S.metasMensais[i];
+  }
+  return null;
+}
+
+function getMetaDia(data) {
+  // data = 'YYYY-MM-DD'
+  var p=data.split('-');
+  var anoMes=p[0]+'-'+p[1];
+  var mm=getMetaMensal(anoMes);
+  if(!mm) return S.meta/(S.diasTrabalho||22);
+  var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+  var diaSem=d.getDay(); // 0=dom,1=seg...
+  var nomes=['dom','seg','ter','qua','qui','sex','sab'];
+  return mm.dias[nomes[diaSem]]||0;
+}
+
+function calcPreviewMeta() {
+  var mes=document.getElementById('mmMes').value;
+  var metaTotal=parseFloat(document.getElementById('mmMetaTotal').value)||0;
+  if(!mes){document.getElementById('mmPreview').style.display='none';return;}
+  var p=mes.split('-');
+  var ano=parseInt(p[0]),m=parseInt(p[1])-1;
+  var diasMes=new Date(ano,m+1,0).getDate();
+  var nomes=['dom','seg','ter','qua','qui','sex','sab'];
+  var ids=['mmDom','mmSeg','mmTer','mmQua','mmQui','mmSex','mmSab'];
+  var vals={};
+  nomes.forEach(function(n,i){vals[n]=parseFloat(document.getElementById(ids[i]).value)||0;});
+  var totalProj=0,diasTrab=0;
+  for(var d=1;d<=diasMes;d++){
+    var diaSem=new Date(ano,m,d).getDay();
+    var v=vals[nomes[diaSem]];
+    totalProj+=v;
+    if(v>0)diasTrab++;
+  }
+  var diff=totalProj-metaTotal;
+  var cor=diff>=0?'var(--accent)':'var(--red)';
+  var sinal=diff>=0?'+':'';
+  var preview=document.getElementById('mmPreview');
+  preview.style.display='block';
+  preview.innerHTML='<div>📅 Dias trabalhados no mês: <b>'+diasTrab+'</b></div>'
+    +'<div>💰 Projeção total: <b style="color:var(--accent)">'+brl(totalProj)+'</b></div>'
+    +(metaTotal>0?'<div>🎯 Meta mensal: <b>'+brl(metaTotal)+'</b></div>'
+    +'<div style="color:'+cor+'">'+sinal+brl(diff)+' em relação à meta</div>':'');
+}
+
+var _editMetaMes = null;
+function abrirNovaMetaMensal() {
+  _editMetaMes = null;
+  var hoje=new Date();
+  document.getElementById('mmMes').value=hoje.getFullYear()+'-'+(String(hoje.getMonth()+1).padStart(2,'0'));
+  document.getElementById('mmMetaTotal').value='';
+  ['mmSeg','mmTer','mmQua','mmQui','mmSex','mmSab','mmDom'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('mmPreview').style.display='none';
+  document.getElementById('modal-metamensal').classList.add('open');
+}
+
+function editarMetaMensal(mes) {
+  var mm=getMetaMensal(mes);
+  if(!mm) return;
+  _editMetaMes=mes;
+  document.getElementById('mmMes').value=mes;
+  document.getElementById('mmMetaTotal').value=mm.metaTotal||'';
+  var nomes=['dom','seg','ter','qua','qui','sex','sab'];
+  var ids=['mmDom','mmSeg','mmTer','mmQua','mmQui','mmSex','mmSab'];
+  nomes.forEach(function(n,i){document.getElementById(ids[i]).value=mm.dias[n]||'';});
+  calcPreviewMeta();
+  document.getElementById('modal-metamensal').classList.add('open');
+}
+
+function salvarMetaMensal() {
+  var mes=document.getElementById('mmMes').value;
+  if(!mes){alert('Selecione o mês');return;}
+  var metaTotal=parseFloat(document.getElementById('mmMetaTotal').value)||0;
+  var nomes=['dom','seg','ter','qua','qui','sex','sab'];
+  var ids=['mmDom','mmSeg','mmTer','mmQua','mmQui','mmSex','mmSab'];
+  var dias={};
+  nomes.forEach(function(n,i){dias[n]=parseFloat(document.getElementById(ids[i]).value)||0;});
+  if(!S.metasMensais) S.metasMensais=[];
+  var idx=-1;
+  for(var i=0;i<S.metasMensais.length;i++){if(S.metasMensais[i].mes===mes){idx=i;break;}}
+  var obj={mes:mes,metaTotal:metaTotal,dias:dias};
+  if(idx>=0){S.metasMensais[idx]=obj;}else{S.metasMensais.push(obj);}
+  S.metasMensais.sort(function(a,b){return a.mes>b.mes?1:-1;});
+  persist();
+  closeModal('metamensal');
+  renderMetasMensais();
+  renderPainel();
+}
+
+function removerMetaMensal(mes) {
+  if(!confirm('Remover meta de '+mes+'?')) return;
+  S.metasMensais=S.metasMensais.filter(function(m){return m.mes!==mes;});
+  persist();
+  renderMetasMensais();
+  renderPainel();
+}
+
+function renderMetasMensais() {
+  var el=document.getElementById('metasMensaisList');
+  if(!S.metasMensais||!S.metasMensais.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">Nenhuma meta configurada</div>';
+    return;
+  }
+  var nomesMes=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var h='';
+  S.metasMensais.forEach(function(mm){
+    var p=mm.mes.split('-');
+    var lbl=nomesMes[parseInt(p[1])-1]+'/'+p[0];
+    var nomes=['dom','seg','ter','qua','qui','sex','sab'];
+    var ids_label=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+    var diasStr=nomes.map(function(n,i){return mm.dias[n]>0?ids_label[i]+': '+brl(mm.dias[n]):null;}).filter(Boolean).join(' · ');
+    h+='<div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      +'<span style="font-weight:700;font-size:14px">'+lbl+'</span>'
+      +'<div style="display:flex;gap:8px">'
+      +'<button onclick="editarMetaMensal(\''+mm.mes+'\')" style="background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;">Editar</button>'
+      +'<button onclick="removerMetaMensal(\''+mm.mes+'\')" style="background:rgba(255,77,109,0.15);color:var(--red);border:1px solid rgba(255,77,109,0.3);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:\'DM Sans\',sans-serif;">Remover</button>'
+      +'</div></div>'
+      +(mm.metaTotal?'<div style="font-size:12px;color:var(--accent);margin-bottom:4px">Meta: '+brl(mm.metaTotal)+'</div>':'')
+      +'<div style="font-size:11px;color:var(--muted);line-height:1.6">'+diasStr+'</div>'
+      +'</div>';
+  });
+  el.innerHTML=h;
+}
+
 function renderPainel(){
   var n=new Date(),mes=n.getMonth(),ano=n.getFullYear();
   var tM=S.turnos.filter(function(t){var p=t.data.split('-');var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));return d.getMonth()===mes&&d.getFullYear()===ano;});
@@ -517,9 +690,23 @@ function renderPainel(){
   document.getElementById('pGreeting').textContent='Ola, '+S.config.nome+' 👋';
   document.getElementById('pFat').textContent=brl(c.fat);
   document.getElementById('pSub').textContent='Faturamento em '+n.toLocaleString('pt-BR',{month:'long'});
-  var dias=S.diasTrabalho||22,diaria=S.meta/dias,esp=diaria*n.getDate(),onT=c.fat>=esp,pct=Math.min(100,(c.fat/S.meta)*100);
+  var anoMes=ano+'-'+(String(mes+1).padStart(2,'0'));
+  var mm=getMetaMensal(anoMes);
+  var metaMensal=mm&&mm.metaTotal?mm.metaTotal:S.meta;
+  // Calcula esperado acumulado até hoje
+  var esp=0,diaria=0;
+  if(mm){
+    var nomes=['dom','seg','ter','qua','qui','sex','sab'];
+    for(var d=1;d<=n.getDate();d++){var ds=new Date(ano,mes,d).getDay();esp+=mm.dias[nomes[ds]]||0;}
+    diaria=getMetaDia(todayStr());
+  } else {
+    var diasT=S.diasTrabalho||22;
+    diaria=metaMensal/diasT;
+    esp=diaria*n.getDate();
+  }
+  var onT=c.fat>=esp,pct=Math.min(100,(c.fat/metaMensal)*100);
   document.getElementById('pMetaCard').className='meta-card '+(onT?'meta-ok':'meta-off');
-  document.getElementById('pMetaInfo').textContent='Meta: '+brl(S.meta)+' · Diaria: '+brl(diaria);
+  document.getElementById('pMetaInfo').textContent='Meta: '+brl(metaMensal)+' · Diaria: '+brl(diaria);
   document.getElementById('pMetaPct').textContent=pct.toFixed(1)+'%';
   document.getElementById('pMetaPct').style.color=onT?'var(--accent)':'var(--red)';
   var diff=c.fat-esp;
@@ -563,7 +750,7 @@ function renderDia(){
   var c=calcStats(tv,dv);
   document.getElementById('diaStats').innerHTML=scard('Faturamento',brl(c.fat),'var(--accent)')+scard('Lucro Real',brl(c.lucro),c.lucro>=0?'var(--accent)':'var(--red)')+scard('KM Rodados',fkm(c.kmT),'var(--blue)')+scard('Horas',fh(c.minT),'var(--yellow)')+scard('Corridas',c.cor||'-','var(--purple)')+scard('Despesas',brl(c.despT+c.gastoComb),'var(--red)')+scard('R$/km',c.kmT>0?brl(c.fat/c.kmT):'-','var(--accent)')+scard('R$/hora',c.minT>0?brl(c.fat/(c.minT/60)):'-','var(--yellow)');
   // Meta do dia
-  var diaria=S.meta/(S.diasTrabalho||22);
+  var diaria=getMetaDia(ds);
   var bateu=c.fat>=diaria;
   var pctDia=diaria>0?Math.min(100,(c.fat/diaria)*100):0;
   var mc=document.getElementById('diaMetaCard');
@@ -620,13 +807,11 @@ function renderResumo(){
 
   // Dias batidos (só semana e mes)
   if(rPer==='semana'||rPer==='mes'){
-    var diaria=S.meta/(S.diasTrabalho||22);
     // Agrupa faturamento por dia
     var fatDia={};
     tf.forEach(function(t){ fatDia[t.data]=(fatDia[t.data]||0)+(t.faturamento||0); });
     var dias=Object.keys(fatDia).sort();
-    var batidos=dias.filter(function(d){return fatDia[d]>=diaria;});
-    var naoB=dias.filter(function(d){return fatDia[d]<diaria;});
+    var batidos=dias.filter(function(d){return fatDia[d]>=getMetaDia(d);});
     var total=dias.length;
     if(total>0){
       var aberto=false;
@@ -638,7 +823,7 @@ function renderResumo(){
         lbl=lbl.charAt(0).toUpperCase()+lbl.slice(1);
         detalhes+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1f2937;font-size:13px;">'
           +'<span>'+(ok?'✅':'❌')+' '+lbl+'</span>'
-          +'<span style="font-family:\'DM Mono\',monospace;color:'+(ok?'var(--accent)':'var(--red)')+'">'+brl(fatDia[d])+'</span>'
+          +'<span style="font-family:\'DM Mono\',monospace;color:'+(ok?'var(--accent)':'var(--red)')+'">'+brl(fatDia[d])+' / '+brl(getMetaDia(d))+'</span>'
           +'</div>';
       });
       document.getElementById('rDiasBatidos').style.display='block';
@@ -675,6 +860,7 @@ function renderConfig(){
   document.getElementById('cfgCntT').textContent=S.turnos.length;
   document.getElementById('cfgCntD').textContent=S.despesas.length;
   document.getElementById('cfgCntA').textContent=S.abastecimentos.length;
+  renderMetasMensais();
 }
 function salvarConfig(){
   S.config.nome=document.getElementById('cfgNome').value||'Motorista';
